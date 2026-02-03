@@ -163,6 +163,8 @@ export function AuthDrawer({ isOpen, onOpenChange, onLoginSuccess }: AuthDrawerP
   }
   
   const renderStepContent = () => {
+    const buttonNeonClass = "w-full bg-neon-green text-black hover:bg-neon-green/90 font-bold";
+
     switch (step) {
       case "choice":
         return (
@@ -172,7 +174,7 @@ export function AuthDrawer({ isOpen, onOpenChange, onLoginSuccess }: AuthDrawerP
               <SheetDescription>Para finalizar sua compra, faça login ou crie uma conta.</SheetDescription>
             </SheetHeader>
             <div className="flex-1 flex flex-col items-center justify-center gap-4">
-              <Button className="w-full" onClick={() => setStep('login')}>Fazer Login</Button>
+              <Button className={buttonNeonClass} onClick={() => setStep('login')}>Fazer Login</Button>
               <Button className="w-full" variant="outline" onClick={() => setStep('register')}>Criar Conta</Button>
             </div>
             <SheetFooter>
@@ -189,13 +191,13 @@ export function AuthDrawer({ isOpen, onOpenChange, onLoginSuccess }: AuthDrawerP
             </SheetHeader>
             <div className="py-4 flex-1">
               <div className="grid gap-4">
-                <div className="grid gap-2"><Label htmlFor="login-email">Email</Label><Input id="login-email" type="email" placeholder="seu@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required/></div>
-                <div className="grid gap-2"><Label htmlFor="login-password">Senha</Label><Input id="login-password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required/></div>
+                <div className="grid gap-2"><Label htmlFor="login-email" className="text-neutral-200">Email</Label><Input id="login-email" type="email" placeholder="seu@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required/></div>
+                <div className="grid gap-2"><Label htmlFor="login-password" className="text-neutral-200">Senha</Label><Input id="login-password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required/></div>
                 {error && <p className="text-red-500 text-sm">{error}</p>}
               </div>
             </div>
             <SheetFooter className="mt-auto flex-col space-y-2">
-              <Button type="submit" disabled={isLoading}>{isLoading ? "Entrando..." : "Entrar"}</Button>
+              <Button type="submit" disabled={isLoading} className={buttonNeonClass}>{isLoading ? "Entrando..." : "Entrar"}</Button>
               <Button variant="link" type="button" onClick={() => { setStep('register'); setError(null); }}>Não tem uma conta? Crie uma</Button>
               <SheetClose asChild><Button variant="outline" onClick={resetState}>Cancelar</Button></SheetClose>
             </SheetFooter>
@@ -210,13 +212,13 @@ export function AuthDrawer({ isOpen, onOpenChange, onLoginSuccess }: AuthDrawerP
             </SheetHeader>
             <div className="py-4 flex-1">
               <div className="grid gap-4">
-                <div className="grid gap-2"><Label htmlFor="reg-email">Email</Label><Input id="reg-email" type="email" placeholder="seu@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required/></div>
-                <div className="grid gap-2"><Label htmlFor="reg-password">Senha</Label><Input id="reg-password" type="password" placeholder="•••••••• (mín. 6 caracteres)" value={password} onChange={(e) => setPassword(e.target.value)} required/></div>
+                <div className="grid gap-2"><Label htmlFor="reg-email" className="text-neutral-200">Email</Label><Input id="reg-email" type="email" placeholder="seu@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required/></div>
+                <div className="grid gap-2"><Label htmlFor="reg-password" className="text-neutral-200">Senha</Label><Input id="reg-password" type="password" placeholder="•••••••• (mín. 6 caracteres)" value={password} onChange={(e) => setPassword(e.target.value)} required/></div>
                 {error && <p className="text-red-500 text-sm">{error}</p>}
               </div>
             </div>
             <SheetFooter className="mt-auto flex-col space-y-2">
-              <Button type="submit" disabled={isLoading}>{isLoading ? "Criando..." : "Criar e continuar"}</Button>
+              <Button type="submit" disabled={isLoading} className={buttonNeonClass}>{isLoading ? "Criando..." : "Criar e continuar"}</Button>
               <Button variant="link" type="button" onClick={() => { setStep('login'); setError(null); }}>Já tem uma conta? Faça login</Button>
               <SheetClose asChild><Button variant="outline" onClick={resetState}>Cancelar</Button></SheetClose>
             </SheetFooter>
@@ -230,21 +232,55 @@ export function AuthDrawer({ isOpen, onOpenChange, onLoginSuccess }: AuthDrawerP
               <SheetDescription>Precisamos de mais algumas informações.</SheetDescription>
             </SheetHeader>
             <div className="py-4 flex-1 overflow-y-auto pr-2">
-              <div className="grid gap-4">
-                <div className="grid gap-2"><Label htmlFor="fullName">Nome Completo</Label><Input id="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} required/></div>
-                <div className="grid gap-2"><Label htmlFor="cpfCnpj">CPF ou CNPJ</Label><Input id="cpfCnpj" value={cpfCnpj} onChange={(e) => setCpfCnpj(e.target.value)} required/></div>
-                <div className="grid gap-2"><Label htmlFor="phone">Telefone / Celular</Label><Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} required/></div>
-                <div className="grid gap-2"><Label htmlFor="birthDate">Data de Nascimento</Label><Input id="birthDate" type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} required/></div>
-                <div className="grid gap-2"><Label htmlFor="postalCode">CEP</Label><Input id="postalCode" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} required/></div>
-                <div className="grid gap-2"><Label htmlFor="address">Endereço</Label><Input id="address" value={address} onChange={(e) => setAddress(e.target.value)} required/></div>
-                <div className="grid gap-2"><Label htmlFor="addressNumber">Número</Label><Input id="addressNumber" value={addressNumber} onChange={(e) => setAddressNumber(e.target.value)} required/></div>
-                <div className="grid gap-2"><Label htmlFor="complement">Complemento</Label><Input id="complement" value={complement} onChange={(e) => setComplement(e.target.value)} /></div>
-                <div className="grid gap-2"><Label htmlFor="province">Bairro</Label><Input id="province" value={province} onChange={(e) => setProvince(e.target.value)} required/></div>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="fullName" className="text-neutral-200">Nome Completo</Label>
+                  <Input id="fullName" placeholder="Seu nome completo" value={fullName} onChange={(e) => setFullName(e.target.value)} required/>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="cpfCnpj" className="text-neutral-200">CPF ou CNPJ</Label>
+                    <Input id="cpfCnpj" placeholder="000.000.000-00" value={cpfCnpj} onChange={(e) => setCpfCnpj(e.target.value)} required/>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="birthDate" className="text-neutral-200">Data de Nascimento</Label>
+                    <Input id="birthDate" type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} required/>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="phone" className="text-neutral-200">Telefone / Celular</Label>
+                    <Input id="phone" placeholder="(00) 00000-0000" value={phone} onChange={(e) => setPhone(e.target.value)} required/>
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="postalCode" className="text-neutral-200">CEP</Label>
+                    <Input id="postalCode" placeholder="00000-000" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} required/>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                    <div className="space-y-2 col-span-2">
+                        <Label htmlFor="address" className="text-neutral-200">Endereço</Label>
+                        <Input id="address" placeholder="Rua, Avenida, etc." value={address} onChange={(e) => setAddress(e.target.value)} required/>
+                    </div>
+                    <div className="space-y-2 col-span-1">
+                        <Label htmlFor="addressNumber" className="text-neutral-200">Número</Label>
+                        <Input id="addressNumber" placeholder="Nº" value={addressNumber} onChange={(e) => setAddressNumber(e.target.value)} required/>
+                    </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="province" className="text-neutral-200">Bairro</Label>
+                        <Input id="province" placeholder="Seu Bairro" value={province} onChange={(e) => setProvince(e.target.value)} required/>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="complement" className="text-neutral-200">Complemento</Label>
+                        <Input id="complement" placeholder="Apto, Bloco, Casa" value={complement} onChange={(e) => setComplement(e.target.value)} />
+                    </div>
+                </div>
+
                 {error && <p className="text-red-500 text-sm">{error}</p>}
               </div>
             </div>
             <SheetFooter className="mt-auto">
-              <Button type="submit" disabled={isLoading}>{isLoading ? "Salvando..." : "Finalizar Cadastro"}</Button>
+              <Button type="submit" disabled={isLoading} className={buttonNeonClass}>{isLoading ? "Salvando..." : "Finalizar Cadastro"}</Button>
             </SheetFooter>
           </form>
         );
@@ -256,7 +292,7 @@ export function AuthDrawer({ isOpen, onOpenChange, onLoginSuccess }: AuthDrawerP
               <SheetDescription>Bem-vindo(a)! Sua conta foi criada e seu perfil está completo.</SheetDescription>
             </SheetHeader>
             <SheetFooter className="mt-auto">
-              <SheetClose asChild><Button onClick={() => handleOpenChange(false)}>Fechar</Button></SheetClose>
+              <SheetClose asChild><Button onClick={() => handleOpenChange(false)} className={buttonNeonClass}>Fechar</Button></SheetClose>
             </SheetFooter>
           </div>
         )
@@ -265,7 +301,7 @@ export function AuthDrawer({ isOpen, onOpenChange, onLoginSuccess }: AuthDrawerP
 
   return (
     <Sheet open={isOpen} onOpenChange={handleOpenChange}>
-      <SheetContent className="w-full sm:max-w-lg bg-black border-l border-purple-500/30 p-8 flex flex-col">
+      <SheetContent className="w-full sm:max-w-2xl bg-black border-l border-purple-500/30 p-8 flex flex-col">
         {renderStepContent()}
       </SheetContent>
     </Sheet>

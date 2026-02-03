@@ -77,6 +77,9 @@ export async function POST(request: Request) {
         postalCode,
       };
 
+      // console.log("DEBUG: Asaas API URL:", process.env.ASAAS_API_URL);
+      // console.log("!!! DEBUG - FULL KEY (REMOVE AFTER) !!! ASAAS API Key:", process.env.ASAAS_API_KEY);
+
       const asaasResponse = await fetch(`${process.env.ASAAS_API_URL}/customers`, {
         method: 'POST',
         headers: {
