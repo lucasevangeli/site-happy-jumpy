@@ -1,15 +1,41 @@
 "use client";
 
 import React, { useState } from 'react';
-import { ShoppingCart, Menu, X } from 'lucide-react';
+import { ShoppingCart, Menu, X, User } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { auth } from '@/lib/firebase';
+import { signOut } from 'firebase/auth';
 import { Button } from '@/components/ui/button';
 import CartDrawer from './CartDrawer';
+import { AuthDrawer } from './AuthDrawer';
+import { useUI } from '@/contexts/UIContext';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { toast } from "sonner";
+
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isCartOpen, setIsCartOpen] = useState(false);
   const { getTotalItems } = useCart();
+  const { isCartOpen, openCart, closeCart, isAuthOpen, closeAuth } = useUI();
+  const { user } = useAuth(); // Pega o usuário do contexto de autenticação
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      toast.success("Você saiu da sua conta.");
+    } catch (error) {
+      toast.error("Erro ao tentar sair da conta.");
+      console.error("Erro no logout:", error);
+    }
+  };
 
   const menuItems = [
     { label: 'Início', href: '#inicio' },
@@ -51,10 +77,11 @@ const Header = () => {
 
               <div className="flex items-center space-x-4">
                 <Button
-                  onClick={() => setIsCartOpen(true)}
+                  onClick={openCart}
                   variant="neonGreen"
                   size="icon"
                   className="relative"
+                  aria-label="Abrir carrinho"
                 >
                   <ShoppingCart className="w-5 h-5" />
                   {getTotalItems() > 0 && (
@@ -63,6 +90,25 @@ const Header = () => {
                     </span>
                   )}
                 </Button>
+                
+                {user && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="neonGreen" size="icon" className="relative">
+                        <User className="h-5 w-5" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem disabled>{user.email}</DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={handleLogout} className="text-red-400 cursor-pointer">
+                        Sair
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
 
                 <Button
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -91,7 +137,8 @@ const Header = () => {
         </div>
       </header>
 
-      <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+      <CartDrawer isOpen={isCartOpen} onClose={closeCart} />
+      <AuthDrawer isOpen={isAuthOpen} onOpenChange={closeAuth} onLoginSuccess={closeAuth} />
     </>
   );
 };

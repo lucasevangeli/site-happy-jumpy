@@ -1,0 +1,49 @@
+curl --request POST \
+     --url https://api-sandbox.asaas.com/v3/customers \
+     --header 'accept: application/json' \
+     --header 'access_token: tokenaqui' \
+     --header 'content-type: application/json' \
+     --data '
+{
+  "name": "nome do cliente",
+  "cpfCnpj": "24971563792",
+  "email": "john.doe@asaas.com.br",
+  "mobilePhone": "4799376637",
+  "address": "Av. Paulista",
+  "addressNumber": "150",
+  "complement": "Sala 201",
+  "province": "Centro",
+  "postalCode": "01310-000"
+}
+'
+
+resposta deve ser :
+
+{
+  "object": "customer",
+  "id": "cus_000005401844",
+  "dateCreated": "2024-07-12",
+  "name": "John Doe",
+  "email": "john.doe@asaas.com.br",
+  "phone": "90999999999",
+  "mobilePhone": "90999999999",
+  "address": "Av. Paulista",
+  "addressNumber": "150",
+  "complement": "Sala 201",
+  "province": "Centro",
+  "city": 12565,
+  "cityName": "São Paulo",
+  "state": "SP",
+  "country": "Brasil",
+  "postalCode": "01310000",
+  "cpfCnpj": "24971563792",
+  "personType": "FISICA",
+  "deleted": false,
+  "additionalEmails": "john.doe@asaas.com,john.doe.silva@asaas.com.br",
+  "externalReference": "12987382",
+  "notificationDisabled": false,
+  "observations": "ótimo pagador, nenhum problema até o momento",
+  "foreignCustomer": false
+}
+
+precisamos guardar o "id": "cus_000005401844",

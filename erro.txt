@@ -1,0 +1,204 @@
+Failed to load resource: the server responded with a status of 404 (Not Found)Entenda o erro
+react-dom.development.js:36809 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+app-index.js:32 Warning: Extra attributes from the server: cz-shortcut-listen
+    at body
+    at html
+    at RedirectErrorBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/redirect-boundary.js:72:9)
+    at RedirectBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/redirect-boundary.js:80:11)
+    at NotFoundErrorBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/not-found-boundary.js:54:9)
+    at NotFoundBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/not-found-boundary.js:62:11)
+    at DevRootNotFoundBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/dev-root-not-found-boundary.js:32:11)
+    at ReactDevOverlay (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/internal/ReactDevOverlay.js:66:9)
+    at HotReload (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/react-dev-overlay/hot-reloader-client.js:287:11)
+    at Router (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/app-router.js:157:11)
+    at ErrorBoundaryHandler (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/error-boundary.js:82:9)
+    at ErrorBoundary (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/error-boundary.js:110:11)
+    at AppRouter (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/app-router.js:440:13)
+    at ServerRoot (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-index.js:123:11)
+    at RSCComponent
+    at Root (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-index.js:139:11)
+window.console.error @ app-index.js:32Entenda o erro
+2index.mjs:344 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+eval @ index.mjs:344Entenda o aviso
+init_embed.js:325 Search endpoint requested!
+hot-reloader-client.js:148 [Fast Refresh] rebuilding
+grid.svg:1  Failed to load resource: the server responded with a status of 404 (Not Found)Entenda o erro
+2index.mjs:344 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+eval @ index.mjs:344Entenda o aviso
+(índice):1 [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) null
+hot-reloader-client.js:148 [Fast Refresh] rebuilding
+grid.svg:1  Failed to load resource: the server responded with a status of 404 (Not Found)Entenda o erro
+hot-reloader-client.js:148 [Fast Refresh] rebuilding
+grid.svg:1  Failed to load resource: the server responded with a status of 404 (Not Found)Entenda o erro
+2index.mjs:344 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+eval @ index.mjs:344Entenda o aviso
+2hot-reloader-client.js:148 [Fast Refresh] rebuilding
+grid.svg:1  Failed to load resource: the server responded with a status of 404 (Not Found)Entenda o erro
+hot-reloader-client.js:148 [Fast Refresh] rebuilding
+grid.svg:1  Failed to load resource: the server responded with a status of 404 (Not Found)Entenda o erro
+hot-reloader-client.js:148 [Fast Refresh] rebuilding
+grid.svg:1  Failed to load resource: the server responded with a status of 404 (Not Found)Entenda o erro
+hot-reloader-client.js:148 [Fast Refresh] rebuilding
+grid.svg:1  Failed to load resource: the server responded with a status of 404 (Not Found)Entenda o erro
+hot-reloader-client.js:148 [Fast Refresh] rebuilding
+grid.svg:1  Failed to load resource: the server responded with a status of 404 (Not Found)Entenda o erro
+hot-reloader-client.js:148 [Fast Refresh] rebuilding
+grid.svg:1  Failed to load resource: the server responded with a status of 404 (Not Found)Entenda o erro
+2index.mjs:344 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+eval @ index.mjs:344Entenda o aviso
+(índice):1 [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) null
+2index.mjs:344 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+eval @ index.mjs:344Entenda o aviso
+(índice):1 [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) <input class=​"flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:​border-0 file:​bg-transparent file:​text-sm file:​font-medium file:​text-foreground placeholder:​text-muted-foreground focus-visible:​outline-none focus-visible:​ring-2 focus-visible:​ring-ring focus-visible:​ring-offset-2 disabled:​cursor-not-allowed disabled:​opacity-50" id=​"cpfCnpj" required value=​"790.325.003-50">​
+2index.mjs:344 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+eval @ index.mjs:344Entenda o aviso
+index.mjs:344 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+eval @ index.mjs:344
+commitHookEffectListMount @ react-dom.development.js:19999
+commitHookPassiveMountEffects @ react-dom.development.js:22056
+commitPassiveMountOnFiber @ react-dom.development.js:22161
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22272
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22158
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22158
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22158
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22158
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22158
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22158
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22158
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22272
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22158
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22158
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22272
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22158
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22158
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22158
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22272
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22158
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22158
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22158
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22158
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22272
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22158
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22272
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22158
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22272
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22158
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22272
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22158
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22158
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22158
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22272
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22158
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22158
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22272
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22272
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22158
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22272
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22158
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22272
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22158
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22272
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22158
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22272
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22272
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22272
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22272
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22158
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22272
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22158
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22158
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22272
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22158
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22272
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22272
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22272
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22272
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22272
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22158
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22272
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22158
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22158
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22158
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22158
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22158
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22272
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22272
+recursivelyTraversePassiveMountEffects @ react-dom.development.js:22139
+commitPassiveMountOnFiber @ react-dom.development.js:22169
+commitPassiveMountEffects @ react-dom.development.js:22127
+flushPassiveEffectsImpl @ react-dom.development.js:25283
+flushPassiveEffects @ react-dom.development.js:25224
+commitRootImpl @ react-dom.development.js:25131
+commitRoot @ react-dom.development.js:24873
+performSyncWorkOnRoot @ react-dom.development.js:23739
+flushSyncWorkAcrossRoots_impl @ react-dom.development.js:9975
+flushSyncWorkOnAllRoots @ react-dom.development.js:9933
+processRootScheduleInMicrotask @ react-dom.development.js:10077
+eval @ react-dom.development.js:10248Entenda o aviso
+index.mjs:344 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
