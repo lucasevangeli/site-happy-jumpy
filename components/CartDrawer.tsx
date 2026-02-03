@@ -17,9 +17,12 @@ interface CartDrawerProps {
 const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
   const { cart, updateQuantity, removeFromCart, getTotalPrice, clearCart } = useCart();
   const { user } = useAuth(); // Usar estado de autenticação
-  const { openAuth, closeCart } = useUI(); // Usar controles da UI
+  const { openAuth, closeCart, openCheckoutDrawer } = useUI(); // Usar controles da UI
 
   const handleCheckout = () => {
+    console.log("handleCheckout Clicado!");
+    console.log("User object:", user);
+
     if (cart.length === 0) {
       toast.error('Carrinho vazio', {
         description: 'Adicione produtos ao carrinho antes de finalizar.',
@@ -28,6 +31,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
     }
 
     if (!user) {
+      console.log("Usuário NÃO está logado. Abrindo AuthDrawer.");
       // Usuário não está logado, abre o painel de autenticação
       closeCart();
       openAuth();
@@ -35,11 +39,10 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
         description: 'Faça login ou crie uma conta para continuar.',
       });
     } else {
-      // Usuário está logado, continua para o checkout
-      toast.success('Redirecionando para o checkout...', {
-        description: 'Você será redirecionado para finalizar sua compra.',
-      });
-      // Aqui iria a lógica real de checkout
+      console.log("Usuário ESTÁ logado. Abrindo CheckoutDrawer.");
+      // Usuário está logado, fecha o carrinho e abre o drawer de checkout
+      closeCart();
+      openCheckoutDrawer();
     }
   };
 

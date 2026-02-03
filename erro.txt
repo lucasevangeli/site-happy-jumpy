@@ -1,0 +1,12 @@
+wristbands
+	-OjfhaaQx6cg0_bZeQeL
+		color:"#39FF14"
+		created_at:"2026-01-23T16:35:58.677Z"
+		description:"Esta pulseira vale 1 minuto"
+		duration_minutes:1 
+		price:25.5
+		title:"1 minuto"
+		updated_at:"2026-01-23T16:35:58.677Z"
+------------------------------------segue o resto
+		-OkTYx_cc1WQH4TxR_q6
+		-OkTaspNE1ARBnddW142

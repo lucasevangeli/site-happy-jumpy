@@ -9,6 +9,7 @@ import { signOut } from 'firebase/auth';
 import { Button } from '@/components/ui/button';
 import CartDrawer from './CartDrawer';
 import { AuthDrawer } from './AuthDrawer';
+import { CheckoutDrawer } from './CheckoutDrawer';
 import { useUI } from '@/contexts/UIContext';
 import {
   DropdownMenu,
@@ -23,8 +24,8 @@ import { toast } from "sonner";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { getTotalItems } = useCart();
-  const { isCartOpen, openCart, closeCart, isAuthOpen, closeAuth } = useUI();
+  const { cart, getTotalItems, getTotalPrice } = useCart();
+  const { isCartOpen, openCart, closeCart, isAuthOpen, closeAuth, isCheckoutDrawerOpen, closeCheckoutDrawer } = useUI();
   const { user } = useAuth(); // Pega o usuário do contexto de autenticação
 
   const handleLogout = async () => {
@@ -139,6 +140,12 @@ const Header = () => {
 
       <CartDrawer isOpen={isCartOpen} onClose={closeCart} />
       <AuthDrawer isOpen={isAuthOpen} onOpenChange={closeAuth} onLoginSuccess={closeAuth} />
+      <CheckoutDrawer 
+        isOpen={isCheckoutDrawerOpen} 
+        onOpenChange={closeCheckoutDrawer}
+        cart={cart}
+        totalValue={getTotalPrice()}
+      />
     </>
   );
 };
