@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { auth } from "@/lib/firebase"; // Cliente Firebase
 import { signInWithCustomToken, User, signInWithEmailAndPassword } from "firebase/auth";
+import { CheckCircle } from 'lucide-react'; // Importar CheckCircle
 
 interface AuthDrawerProps {
   isOpen: boolean;
@@ -82,7 +83,7 @@ export function AuthDrawer({ isOpen, onOpenChange, onLoginSuccess }: AuthDrawerP
         description: "Você está pronto para continuar sua compra.",
       });
       if (onLoginSuccess) onLoginSuccess();
-      handleOpenChange(false);
+      setStep("success"); // Muda para o step de sucesso
     } catch (error: any) {
       let friendlyError = "Ocorreu um erro ao fazer login.";
       if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
@@ -199,7 +200,7 @@ export function AuthDrawer({ isOpen, onOpenChange, onLoginSuccess }: AuthDrawerP
             <SheetFooter className="mt-auto flex-col space-y-2">
               <Button type="submit" disabled={isLoading} className={buttonNeonClass}>{isLoading ? "Entrando..." : "Entrar"}</Button>
               <Button variant="link" type="button" onClick={() => { setStep('register'); setError(null); }}>Não tem uma conta? Crie uma</Button>
-              <SheetClose asChild><Button variant="outline" onClick={resetState}>Cancelar</Button></SheetClose>
+              <Button variant="link" type="button" onClick={() => setStep('choice')}>Voltar</Button>
             </SheetFooter>
           </form>
         );
@@ -220,7 +221,7 @@ export function AuthDrawer({ isOpen, onOpenChange, onLoginSuccess }: AuthDrawerP
             <SheetFooter className="mt-auto flex-col space-y-2">
               <Button type="submit" disabled={isLoading} className={buttonNeonClass}>{isLoading ? "Criando..." : "Criar e continuar"}</Button>
               <Button variant="link" type="button" onClick={() => { setStep('login'); setError(null); }}>Já tem uma conta? Faça login</Button>
-              <SheetClose asChild><Button variant="outline" onClick={resetState}>Cancelar</Button></SheetClose>
+              <Button variant="link" type="button" onClick={() => setStep('choice')}>Voltar</Button>
             </SheetFooter>
           </form>
         );
@@ -288,8 +289,8 @@ export function AuthDrawer({ isOpen, onOpenChange, onLoginSuccess }: AuthDrawerP
         return (
           <div className="flex flex-col h-full">
             <SheetHeader className="text-left">
-              <SheetTitle><span className="bg-gradient-to-r from-green-400 to-purple-600 bg-clip-text text-transparent">Cadastro Concluído!</span></SheetTitle>
-              <SheetDescription>Bem-vindo(a)! Sua conta foi criada e seu perfil está completo.</SheetDescription>
+              <SheetTitle><span className="bg-gradient-to-r from-green-400 to-purple-600 bg-clip-text text-transparent">Boas-vindas!</span></SheetTitle>
+              <SheetDescription>Você está logado(a) e pronto(a) para continuar. Boas compras!</SheetDescription>
             </SheetHeader>
             <SheetFooter className="mt-auto">
               <SheetClose asChild><Button onClick={() => handleOpenChange(false)} className={buttonNeonClass}>Fechar</Button></SheetClose>

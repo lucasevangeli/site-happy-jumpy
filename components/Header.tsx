@@ -227,7 +227,7 @@ const Header = () => {
       </header>
 
       <CartDrawer isOpen={isCartOpen} onClose={closeCart} />
-      <AuthDrawer isOpen={isAuthOpen} onOpenChange={closeAuth} onLoginSuccess={closeAuth} />
+      <AuthDrawer isOpen={isAuthOpen} onOpenChange={closeAuth} />
       <CheckoutDrawer 
         isOpen={isCheckoutDrawerOpen} 
         onOpenChange={closeCheckoutDrawer}
