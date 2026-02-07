@@ -179,7 +179,7 @@ export function AuthDrawer({ isOpen, onOpenChange, onLoginSuccess }: AuthDrawerP
               <Button className="w-full" variant="outlineNeon" onClick={() => setStep('register')}>Criar Conta</Button>
             </div>
             <SheetFooter>
-                <SheetClose asChild><Button variant="ghost" onClick={resetState}>Cancelar</Button></SheetClose>
+                <SheetClose asChild><Button variant="ghost" className="text-gray-400" onClick={resetState}>Cancelar</Button></SheetClose>
             </SheetFooter>
           </div>
         );
