@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { ShoppingCart, Menu, X, User } from 'lucide-react';
+import { ShoppingCart, Menu, X, User, Phone, Mail, MapPin } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { auth } from '@/lib/firebase';
@@ -57,84 +57,106 @@ const Header = () => {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 px-4 py-6">
-        <div className="container mx-auto max-w-7xl">
-          <div className="bg-black/90 backdrop-blur-md border border-purple-500/30 rounded-full shadow-2xl shadow-purple-500/20 px-8 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <img src="/HappyJump-46.png" alt="Happy Jumpy Logo" className="h-12" />
-              </div>
-
-              <nav className="hidden md:flex items-center space-x-8">
-                {menuItems.map((item) => (
-                  <button
-                    key={item.label}
-                    onClick={() => scrollToSection(item.href)}
-                    className="text-gray-300 hover:text-green-400 transition-colors duration-300 font-medium"
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </nav>
-
-              <div className="flex items-center space-x-4">
-                <Button
-                  onClick={openCart}
-                  variant="neonGreen"
-                  size="icon"
-                  className="relative"
-                  aria-label="Abrir carrinho"
-                >
-                  <ShoppingCart className="w-5 h-5" />
-                  {getTotalItems() > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-                      {getTotalItems()}
-                    </span>
-                  )}
-                </Button>
-                
-                {user && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="neonGreen" size="icon" className="relative">
-                        <User className="h-5 w-5" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                      <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem disabled>{user.email}</DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={handleLogout} className="text-red-400 cursor-pointer">
-                        Sair
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
-
-                <Button
-                  onClick={() => setIsMenuOpen(!isMenuOpen)}
-                  className="md:hidden bg-purple-600 hover:bg-purple-700"
-                  size="icon"
-                >
-                  {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-                </Button>
-              </div>
+      <header className="fixed top-0 left-0 right-0 z-50">
+        {/* DIV DE CONTATO */}
+        <div className="text-gray-300 text-sm py-3 px-10"> {/* Removido bg-black */}
+          <div className="container mx-auto max-w-7xl flex justify-between items-center px-10">
+            <div className="flex items-center space-x-4">
+              <span className="flex items-center space-x-1">
+                <Phone className="h-4 w-4" /> {/* Ícone de telefone */}
+                <span>(99) 99999-9999</span>
+              </span>
+              <span className="flex items-center space-x-1">
+                <Mail className="h-4 w-4" /> {/* Ícone de email */}
+                <span>contato@happyjumpy.com</span>
+              </span>
             </div>
+            <div className="flex items-center space-x-1">
+              <MapPin className="h-4 w-4" /> {/* Ícone de localização */}
+              <span>Rua Exemplo, 123 - São Paulo, SP</span> {/* Removido "Endereço:" para ficar mais limpo com o ícone */}
+            </div>
+          </div>
+        </div>
+        {/* DIV DO MENU PRINCIPAL */}
+        <div className="px-4 py-2">
+          <div className="container mx-auto max-w-7xl">
+            <div className="bg-black/90 backdrop-blur-md border border-purple-500/30 rounded-full shadow-2xl shadow-purple-500/20 px-8 py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <img src="/HappyJump-46.png" alt="Happy Jumpy Logo" className="h-12" />
+                </div>
 
-            {isMenuOpen && (
-              <nav className="md:hidden mt-4 pt-4 border-t border-purple-500/30 flex flex-col space-y-3">
-                {menuItems.map((item) => (
-                  <button
-                    key={item.label}
-                    onClick={() => scrollToSection(item.href)}
-                    className="text-gray-300 hover:text-green-400 transition-colors duration-300 font-medium text-left"
+                <nav className="hidden md:flex items-center space-x-8">
+                  {menuItems.map((item) => (
+                    <button
+                      key={item.label}
+                      onClick={() => scrollToSection(item.href)}
+                      className="text-gray-300 hover:text-green-400 transition-colors duration-300 font-medium"
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </nav>
+
+                <div className="flex items-center space-x-4">
+                  <Button
+                    onClick={openCart}
+                    variant="neonGreen"
+                    size="icon"
+                    className="relative"
+                    aria-label="Abrir carrinho"
                   >
-                    {item.label}
-                  </button>
-                ))}
-              </nav>
-            )}
+                    <ShoppingCart className="w-5 h-5" />
+                    {getTotalItems() > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                        {getTotalItems()}
+                      </span>
+                    )}
+                  </Button>
+                  
+                  {user && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="neonGreen" size="icon" className="relative">
+                          <User className="h-5 w-5" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem disabled>{user.email}</DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={handleLogout} className="text-red-400 cursor-pointer">
+                          Sair
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+
+                  <Button
+                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    className="md:hidden bg-purple-600 hover:bg-purple-700"
+                    size="icon"
+                  >
+                    {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                  </Button>
+                </div>
+              </div>
+
+              {isMenuOpen && (
+                <nav className="md:hidden mt-4 pt-4 border-t border-purple-500/30 flex flex-col space-y-3">
+                  {menuItems.map((item) => (
+                    <button
+                      key={item.label}
+                      onClick={() => scrollToSection(item.href)}
+                      className="text-gray-300 hover:text-green-400 transition-colors duration-300 font-medium text-left"
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </nav>
+              )}
+            </div>
           </div>
         </div>
       </header>
