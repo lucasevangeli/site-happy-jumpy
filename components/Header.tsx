@@ -136,10 +136,10 @@ const Header = () => {
 
                   <Button
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    className="md:hidden bg-purple-600 hover:bg-purple-700"
+                    className="md:hidden bg-transparent hover:bg-transparent p-0"
                     size="icon"
                   >
-                    {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                    {isMenuOpen ? <X className="w-5 h-5 text-green-400 hover:text-green-300 transition-colors duration-200" /> : <Menu className="w-5 h-5 text-green-400 hover:text-green-300 transition-colors duration-200" />}
                   </Button>
                 </div>
               </div>
