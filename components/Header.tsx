@@ -59,7 +59,7 @@ const Header = () => {
     <>
       <header className="fixed top-0 left-0 right-0 z-50">
         {/* DIV DE CONTATO */}
-        <div className="text-gray-300 text-sm py-3 px-10"> {/* Removido bg-black */}
+        <div className="hidden md:block text-gray-300 text-sm py-3 px-10"> {/* Removido bg-black */}
           <div className="container mx-auto max-w-7xl flex justify-between items-center px-10">
             <div className="flex items-center space-x-4">
               <span className="flex items-center space-x-1 font-bold text-white">
@@ -160,6 +160,21 @@ const Header = () => {
                                   {item.label}
                                 </button>
                               ))}
+
+                              <div className="border-t border-purple-500/30 mt-4 pt-4">
+                                <span className="flex items-center space-x-2 text-gray-300 px-2 py-1">
+                                  <Phone className="h-4 w-4" />
+                                  <span>(99) 99999-9999</span>
+                                </span>
+                                <span className="flex items-center space-x-2 text-gray-300 px-2 py-1">
+                                  <Mail className="h-4 w-4" />
+                                  <span>contato@happyjumpy.com</span>
+                                </span>
+                                <span className="flex items-center space-x-2 text-gray-300 px-2 py-1">
+                                  <MapPin className="h-4 w-4" />
+                                  <span>Rua Exemplo, 123 - São Paulo, SP</span>
+                                </span>
+                              </div>
             
                               {user && (
                                 <>
@@ -168,7 +183,7 @@ const Header = () => {
                                       Minha Conta
                                     </span>
                                   </div>
-                                  <span className="text-gray-300 font-bold text-left px-2 py-2">
+                                  <span className="text-gray-300 font-light text-left px-2 py-2">
                                     {user.email}
                                   </span>
                                   <button
