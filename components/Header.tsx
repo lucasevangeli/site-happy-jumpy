@@ -25,7 +25,7 @@ import { toast } from "sonner";
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { cart, getTotalItems, getTotalPrice } = useCart();
-  const { isCartOpen, openCart, closeCart, isAuthOpen, closeAuth, isCheckoutDrawerOpen, closeCheckoutDrawer } = useUI();
+  const { isCartOpen, openCart, closeCart, isAuthOpen, closeAuth, isCheckoutDrawerOpen, closeCheckoutDrawer, openAuth } = useUI();
   const { user } = useAuth(); // Pega o usuário do contexto de autenticação
 
   const handleLogout = async () => {
@@ -115,27 +115,32 @@ const Header = () => {
                                 )}
                               </div>
                               
-                              <div className="hidden md:block">
-                                {user && (
-                                  <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                      <Button variant="ghost" size="icon" className="relative bg-transparent hover:bg-transparent p-0">
-                                        <User className="h-5 w-5 text-green-400 hover:text-green-300 transition-colors duration-200" />
-                                      </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent>
-                                      <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
-                                      <DropdownMenuSeparator />
-                                      <DropdownMenuItem disabled>{user.email}</DropdownMenuItem>
-                                      <DropdownMenuSeparator />
-                                      <DropdownMenuItem onClick={handleLogout} className="text-red-400 cursor-pointer">
-                                        Sair
-                                      </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                  </DropdownMenu>
-                                )}
-                              </div>
-            
+                                                <div className="hidden md:block">
+                                                  <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                      <Button variant="ghost" size="icon" className="relative bg-transparent hover:bg-transparent p-0">
+                                                        <User className="h-5 w-5 text-green-400 hover:text-green-300 transition-colors duration-200" />
+                                                      </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent>
+                                                      {user ? (
+                                                        <>
+                                                          <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
+                                                          <DropdownMenuSeparator />
+                                                          <DropdownMenuItem disabled>{user.email}</DropdownMenuItem>
+                                                          <DropdownMenuSeparator />
+                                                          <DropdownMenuItem onClick={handleLogout} className="text-red-400 cursor-pointer">
+                                                            Sair
+                                                          </DropdownMenuItem>
+                                                        </>
+                                                      ) : (
+                                                        <DropdownMenuItem onClick={openAuth} className="cursor-pointer">
+                                                          Entrar
+                                                        </DropdownMenuItem>
+                                                      )}
+                                                    </DropdownMenuContent>
+                                                  </DropdownMenu>
+                                                </div>            
                               <Button
                                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                                 className="md:hidden bg-transparent hover:bg-transparent p-0"
