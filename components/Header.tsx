@@ -42,6 +42,7 @@ const Header = () => {
     { label: 'Início', href: '#inicio' },
     { label: 'Sobre', href: '#sobre' },
     { label: 'Pulseiras', href: '#pulseiras' },
+    { label: 'Combos', href: '#combos' },
     { label: 'Galeria', href: '#galeria' },
     { label: 'Contato', href: '#contato' },
   ];
@@ -58,7 +59,7 @@ const Header = () => {
     <>
       <header className="fixed top-0 left-0 right-0 z-50 px-4 py-6">
         <div className="container mx-auto max-w-7xl">
-          <div className="bg-black/90 backdrop-blur-md border border-purple-500/30 rounded-2xl shadow-2xl shadow-purple-500/20 px-8 py-4">
+          <div className="bg-black/90 backdrop-blur-md border border-purple-500/30 rounded-full shadow-2xl shadow-purple-500/20 px-8 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <img src="/HappyJump-46.png" alt="Happy Jumpy Logo" className="h-12" />

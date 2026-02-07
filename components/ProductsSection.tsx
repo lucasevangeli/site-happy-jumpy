@@ -1,45 +1,46 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Clock, Star, Zap, ShoppingCart, Check } from 'lucide-react';
 import { useCart, Product } from '@/contexts/CartContext';
 import { toast } from 'sonner';
+import { db } from '@/lib/firebase';
+import { ref, onValue } from 'firebase/database';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const ProductsSection = () => {
   const { addToCart } = useCart();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const products: Product[] = [
-    {
-      id: '1',
-      name: 'Pulseira 1 Hora',
-      description: 'Perfeito para conhecer todas as atrações',
-      price: 49.90,
-      duration: '60 minutos',
-    },
-    {
-      id: '2',
-      name: 'Pulseira 2 Horas',
-      description: 'Diversão estendida para toda a família',
-      price: 79.90,
-      duration: '120 minutos',
-    },
-    {
-      id: '3',
-      name: 'Pulseira Day Pass',
-      description: 'Dia inteiro de pura adrenalina',
-      price: 129.90,
-      duration: 'Dia inteiro',
-    },
-    {
-      id: '4',
-      name: 'Pulseira VIP',
-      description: 'Acesso premium com vantagens exclusivas',
-      price: 199.90,
-      duration: 'Dia inteiro + extras',
-    },
-  ];
+  useEffect(() => {
+    const productsRef = ref(db, 'wristbands');
+    const unsubscribe = onValue(productsRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const productsArray: Product[] = Object.keys(data).map(key => {
+          const productData = data[key];
+          return {
+            id: key,
+            name: productData.title,
+            description: productData.description,
+            price: productData.price,
+            duration: `${productData.duration_minutes} minutos`,
+            // color: productData.color, // Opcional, se for usar a cor
+          };
+        });
+        setProducts(productsArray);
+      } else {
+        setProducts([]);
+      }
+      setIsLoading(false);
+    });
+
+    // Limpa o listener quando o componente é desmontado
+    return () => unsubscribe();
+  }, []);
 
   const handleAddToCart = (product: Product) => {
     addToCart(product);
@@ -54,6 +55,33 @@ const ProductsSection = () => {
     'Armário para guardar pertences',
     'Wi-Fi gratuito',
   ];
+
+  const renderSkeletons = () => (
+    Array.from({ length: 4 }).map((_, index) => (
+      <Card key={index} className="bg-black/50 backdrop-blur-lg border-2 border-green-500/30 p-4">
+        <CardHeader className="items-center">
+          <Skeleton className="w-16 h-16 rounded-full" />
+          <Skeleton className="h-8 w-3/4 mt-4" />
+          <Skeleton className="h-4 w-full mt-2" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-center mb-4">
+            <Skeleton className="h-10 w-1/2 mx-auto" />
+            <Skeleton className="h-4 w-1/3 mx-auto mt-2" />
+          </div>
+          <Skeleton className="h-px w-full my-4" />
+          <div className="space-y-3">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+          </div>
+        </CardContent>
+        <CardFooter>
+          <Skeleton className="h-12 w-full" />
+        </CardFooter>
+      </Card>
+    ))
+  );
 
   return (
     <section id="pulseiras" className="py-24 bg-gradient-to-b from-black via-purple-950/20 to-black relative overflow-hidden">
@@ -77,23 +105,24 @@ const ProductsSection = () => {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          {products.map((product, index) => (
+          {isLoading ? renderSkeletons() : products.map((product, index) => (
             <Card
               key={product.id}
               className={`bg-black/50 backdrop-blur-lg border-2 transition-all duration-300 hover:scale-105 hover:shadow-2xl ${
-                index === 3
+                // Aplica estilo especial ao último item como exemplo
+                index === products.length - 1
                   ? 'border-purple-500 shadow-purple-500/20'
                   : 'border-green-500/30 hover:border-green-500'
               }`}
             >
               <CardHeader>
-                {index === 3 && (
+                {index === products.length - 1 && (
                   <div className="absolute top-4 right-4">
                     <Star className="w-6 h-6 text-purple-400 fill-purple-400" />
                   </div>
                 )}
                 <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-green-400 to-purple-600 flex items-center justify-center">
-                  {index === 3 ? (
+                  {index === products.length - 1 ? (
                     <Zap className="w-8 h-8 text-white" />
                   ) : (
                     <Clock className="w-8 h-8 text-white" />
@@ -120,7 +149,7 @@ const ProductsSection = () => {
                       <span>{feature}</span>
                     </div>
                   ))}
-                  {index === 3 && (
+                  {index === products.length - 1 && (
                     <>
                       <div className="flex items-center space-x-2 text-sm text-purple-400">
                         <Check className="w-4 h-4 text-purple-400 flex-shrink-0" />
@@ -139,7 +168,7 @@ const ProductsSection = () => {
                 <Button
                   onClick={() => handleAddToCart(product)}
                   className={`w-full ${
-                    index === 3
+                    index === products.length - 1
                       ? 'bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800'
                       : 'bg-gradient-to-r from-green-400 to-green-600 hover:from-green-500 hover:to-green-700'
                   } text-white font-semibold`}
