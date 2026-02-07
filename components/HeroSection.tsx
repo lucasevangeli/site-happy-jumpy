@@ -51,7 +51,7 @@ const HeroSection = () => {
               </span>
             </div>
 
-            <h1 className="text-5xl md:text-7xl font-bold leading-tight">
+            <h1 className="text-5xl md:text-7xl font-extrabold leading-tight">
               <span className="text-white">Bem-vindo à</span>
               <br />
               <span className="text-green-400 drop-shadow-md drop-shadow-green-400">
@@ -68,7 +68,7 @@ const HeroSection = () => {
               <Button
                 onClick={scrollToPulseiras}
                 variant="neonGreen"
-                className="rounded-full font-bold px-8 py-6 text-lg group"
+                className="rounded-full font-extrabold px-8 py-6 text-lg group"
               >
                 Comprar Pulseiras
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />

@@ -78,6 +78,7 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: 'Zain', sans-serif;
   }
   html {
     scroll-behavior: smooth;
