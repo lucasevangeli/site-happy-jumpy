@@ -143,7 +143,7 @@ const ContactSection = () => {
       <footer className="container mx-auto px-4 max-w-7xl mt-16 pt-8 border-t border-purple-500/30">
         <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
           <div className="text-gray-400 text-sm">
-            © 2024 Happy Jumpy. Todos os direitos reservados.
+            © 2026 Happy Jumpy. Todos os direitos reservados.
           </div>
           <div className="flex space-x-6 text-sm text-gray-400">
             <a href="#" className="hover:text-green-400 transition-colors">

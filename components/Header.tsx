@@ -91,7 +91,9 @@ const Header = () => {
                     <button
                       key={item.label}
                       onClick={() => scrollToSection(item.href)}
-                      className="text-gray-300 hover:text-green-400 transition-colors duration-300 font-bold"
+                      className="relative text-gray-300 hover:text-green-400 transition-colors duration-300 font-zain font-bold 
+                                 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-green-400
+                                 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300"
                     >
                       {item.label}
                     </button>
@@ -147,7 +149,9 @@ const Header = () => {
                     <button
                       key={item.label}
                       onClick={() => scrollToSection(item.href)}
-                      className="text-gray-300 hover:text-green-400 transition-colors duration-300 font-medium text-left"
+                      className="relative group text-gray-300 hover:text-green-400 transition-colors duration-300 font-zain font-bold text-left
+                                 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-green-400
+                                 after:scale-x-0 group-hover:after:scale-x-100 after:transition-transform after:duration-300"
                     >
                       {item.label}
                     </button>
