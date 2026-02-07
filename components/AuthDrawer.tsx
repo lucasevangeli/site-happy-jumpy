@@ -176,7 +176,7 @@ export function AuthDrawer({ isOpen, onOpenChange, onLoginSuccess }: AuthDrawerP
             </SheetHeader>
             <div className="flex-1 flex flex-col items-center justify-center gap-4">
               <Button className={buttonNeonClass} onClick={() => setStep('login')}>Fazer Login</Button>
-              <Button className="w-full" variant="outline" onClick={() => setStep('register')}>Criar Conta</Button>
+              <Button className="w-full" variant="outlineNeon" onClick={() => setStep('register')}>Criar Conta</Button>
             </div>
             <SheetFooter>
                 <SheetClose asChild><Button variant="ghost" onClick={resetState}>Cancelar</Button></SheetClose>
@@ -199,8 +199,8 @@ export function AuthDrawer({ isOpen, onOpenChange, onLoginSuccess }: AuthDrawerP
             </div>
             <SheetFooter className="mt-auto flex-col space-y-2">
               <Button type="submit" disabled={isLoading} className={buttonNeonClass}>{isLoading ? "Entrando..." : "Entrar"}</Button>
-              <Button variant="link" type="button" onClick={() => { setStep('register'); setError(null); }}>Não tem uma conta? Crie uma</Button>
-              <Button variant="link" type="button" onClick={() => setStep('choice')}>Voltar</Button>
+              <Button variant="link" type="button" className="text-green-400" onClick={() => { setStep('register'); setError(null); }}>Não tem uma conta? Crie uma</Button>
+              <Button variant="link" type="button" className="text-green-400" onClick={() => setStep('choice')}>Voltar</Button>
             </SheetFooter>
           </form>
         );
@@ -220,8 +220,8 @@ export function AuthDrawer({ isOpen, onOpenChange, onLoginSuccess }: AuthDrawerP
             </div>
             <SheetFooter className="mt-auto flex-col space-y-2">
               <Button type="submit" disabled={isLoading} className={buttonNeonClass}>{isLoading ? "Criando..." : "Criar e continuar"}</Button>
-              <Button variant="link" type="button" onClick={() => { setStep('login'); setError(null); }}>Já tem uma conta? Faça login</Button>
-              <Button variant="link" type="button" onClick={() => setStep('choice')}>Voltar</Button>
+              <Button variant="link" type="button" className="text-green-400" onClick={() => { setStep('login'); setError(null); }}>Já tem uma conta? Faça login</Button>
+              <Button variant="link" type="button" className="text-green-400" onClick={() => setStep('choice')}>Voltar</Button>
             </SheetFooter>
           </form>
         );

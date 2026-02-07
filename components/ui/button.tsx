@@ -20,6 +20,8 @@ const buttonVariants = cva(
         link: 'text-primary underline-offset-4 hover:underline',
         neonGreen:
           'bg-green-400 text-black shadow-lg shadow-green-400/50 hover:shadow-green-400/70 transition-all duration-200 ease-in-out',
+        outlineNeon:
+          'border border-green-400 text-green-400 bg-transparent hover:bg-green-400/10',
       },
       size: {
         default: 'h-10 px-4 py-6',
