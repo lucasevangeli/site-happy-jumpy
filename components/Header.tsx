@@ -62,16 +62,16 @@ const Header = () => {
         <div className="text-gray-300 text-sm py-3 px-10"> {/* Removido bg-black */}
           <div className="container mx-auto max-w-7xl flex justify-between items-center px-10">
             <div className="flex items-center space-x-4">
-              <span className="flex items-center space-x-1 font-bold">
+              <span className="flex items-center space-x-1 font-bold text-white">
                 <Phone className="h-4 w-4" /> {/* Ícone de telefone */}
                 <span>(99) 99999-9999</span>
               </span>
-              <span className="flex items-center space-x-1 font-bold">
+              <span className="flex items-center space-x-1 font-bold text-white">
                 <Mail className="h-4 w-4" /> {/* Ícone de email */}
                 <span>contato@happyjumpy.com</span>
               </span>
             </div>
-            <div className="flex items-center space-x-1 font-bold">
+            <div className="flex items-center space-x-1 font-bold text-white">
               <MapPin className="h-4 w-4" /> {/* Ícone de localização */}
               <span>Rua Exemplo, 123 - São Paulo, SP</span> {/* Removido "Endereço:" para ficar mais limpo com o ícone */}
             </div>
