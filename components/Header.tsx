@@ -99,26 +99,24 @@ const Header = () => {
                 </nav>
 
                 <div className="flex items-center space-x-4">
-                  <Button
+                  <div
                     onClick={openCart}
-                    variant="neonGreen"
-                    size="icon"
-                    className="relative"
+                    className="relative flex items-center justify-center p-2 rounded-md cursor-pointer group"
                     aria-label="Abrir carrinho"
                   >
-                    <ShoppingCart className="w-5 h-5" />
+                    <ShoppingCart className="w-5 h-5 text-green-400 group-hover:text-green-300 transition-colors duration-200" />
                     {getTotalItems() > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center font-bold border-4 border-black">
                         {getTotalItems()}
                       </span>
                     )}
-                  </Button>
+                  </div>
                   
                   {user && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="neonGreen" size="icon" className="relative">
-                          <User className="h-5 w-5" />
+                        <Button variant="ghost" size="icon" className="relative bg-transparent hover:bg-transparent p-0">
+                          <User className="h-5 w-5 text-green-400 hover:text-green-300 transition-colors duration-200" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
