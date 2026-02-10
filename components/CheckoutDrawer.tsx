@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Sheet,
   SheetContent,
@@ -15,25 +15,30 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
+import { ref, onValue, off } from "firebase/database";
 import Image from 'next/image';
+import { CheckCircle2 } from 'lucide-react';
+import { useCart } from '@/contexts/CartContext'; // Import useCart
 
 interface CheckoutDrawerProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  cart: any[]; // Define a type for your cart items
+  cart: any[];
   totalValue: number;
 }
 
-type CheckoutStep = 'selection' | 'pix_generated' | 'card_result';
+type CheckoutStep = 'selection' | 'pix_generated' | 'card_result' | 'payment_confirmed';
 
 export function CheckoutDrawer({ isOpen, onOpenChange, cart, totalValue }: CheckoutDrawerProps) {
   const { toast } = useToast();
+  const { clearCart } = useCart(); // Get clearCart function
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState<CheckoutStep>('selection');
   
   // PIX State
   const [pixData, setPixData] = useState<{ qrCode: string; payload: string } | null>(null);
+  const [internalPaymentId, setInternalPaymentId] = useState<string | null>(null);
 
   // Credit Card State
   const [cardHolderName, setCardHolderName] = useState('');
@@ -41,6 +46,38 @@ export function CheckoutDrawer({ isOpen, onOpenChange, cart, totalValue }: Check
   const [cardExpiry, setCardExpiry] = useState('');
   const [cardCcv, setCardCcv] = useState('');
   const [cardPaymentResult, setCardPaymentResult] = useState<any>(null);
+
+  // Effect to listen for payment status changes on Firebase
+  useEffect(() => {
+    if (!internalPaymentId) return;
+
+    const paymentRef = ref(db, 'payments/' + internalPaymentId);
+
+    // Define the callback function beforehand to avoid reference errors
+    const listenerCallback = (snapshot: any) => {
+      const data = snapshot.val();
+      if (data && data.status === 'CONFIRMED') {
+        setStep('payment_confirmed');
+        clearCart();
+        toast({
+          title: 'Pagamento Confirmado!',
+          description: 'Seu pagamento foi recebido com sucesso.',
+          className: 'bg-green-600 text-white',
+        });
+        // Detach the listener using the named function
+        off(paymentRef, 'value', listenerCallback);
+      }
+    };
+
+    // Attach the listener
+    onValue(paymentRef, listenerCallback);
+
+    // Cleanup function
+    return () => {
+      off(paymentRef, 'value', listenerCallback);
+    };
+  }, [internalPaymentId, toast, clearCart]); // Add clearCart to dependency array
+
 
   const handlePixPayment = async () => {
     setIsLoading(true);
@@ -72,6 +109,7 @@ export function CheckoutDrawer({ isOpen, onOpenChange, cart, totalValue }: Check
 
       const data = await response.json();
       setPixData(data);
+      setInternalPaymentId(data.internalPaymentId);
       setStep('pix_generated');
 
     } catch (error: any) {
@@ -138,6 +176,7 @@ export function CheckoutDrawer({ isOpen, onOpenChange, cart, totalValue }: Check
     setIsLoading(false);
     setStep('selection');
     setPixData(null);
+    setInternalPaymentId(null);
     setCardHolderName('');
     setCardNumber('');
     setCardExpiry('');
@@ -198,7 +237,7 @@ export function CheckoutDrawer({ isOpen, onOpenChange, cart, totalValue }: Check
   
   const renderPixGenerated = () => (
     <div className="py-4 text-center">
-      <SheetTitle className="text-white mb-2">Pague com PIX</SheetTitle>
+      <SheetTitle className="text-white mb-2">Aguardando Pagamento...</SheetTitle>
       <p className="text-sm text-neutral-400 mb-4">
         Aponte a câmera do seu celular para o QR Code ou use o "Copia e Cola".
       </p>
@@ -225,6 +264,16 @@ export function CheckoutDrawer({ isOpen, onOpenChange, cart, totalValue }: Check
     </div>
   );
 
+  const renderPaymentConfirmed = () => (
+    <div className="py-4 text-center flex flex-col items-center justify-center h-full">
+        <CheckCircle2 className="w-24 h-24 text-green-500 mb-4" />
+        <SheetTitle className="text-white mb-2">Pagamento Confirmado!</SheetTitle>
+        <p className="text-sm text-neutral-400">
+            Obrigado pela sua compra. Prepara-se para pular!
+        </p>
+    </div>
+  );
+
   const renderCardResult = () => (
     <div className="py-4 text-center">
       <SheetTitle className="text-white mb-2">Resultado do Pagamento</SheetTitle>
@@ -237,13 +286,14 @@ export function CheckoutDrawer({ isOpen, onOpenChange, cart, totalValue }: Check
     </div>
   );
 
-
   const renderStepContent = () => {
     switch(step) {
       case 'selection':
         return renderSelection();
       case 'pix_generated':
         return renderPixGenerated();
+      case 'payment_confirmed':
+        return renderPaymentConfirmed();
       case 'card_result':
         return renderCardResult();
       default:

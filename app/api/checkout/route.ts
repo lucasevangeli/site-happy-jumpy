@@ -90,33 +90,53 @@ export async function POST(request: Request) {
         }
 
         const paymentData = await createPaymentResponse.json();
-        console.log("DEBUG: Resposta da criação do pagamento:", paymentData); // Log para depuração
+        console.log("DEBUG: Resposta da criação do pagamento:", paymentData);
 
         if (!paymentData.id) {
-          return NextResponse.json({ error: 'ID do pagamento não retornado pelo Asaas.' }, { status: 500 });
+            return NextResponse.json({ error: 'ID do pagamento não retornado pelo Asaas.' }, { status: 500 });
         }
 
-        // ETAPA 2: Buscar o QR Code usando o ID do pagamento
+        // ETAPA 2: Salvar o estado inicial do pagamento no Firebase Realtime Database
+        const db = admin.database();
+        const paymentsRef = db.ref('payments');
+        const newPaymentRef = paymentsRef.push(); // Gera uma nova chave única
+
+        await newPaymentRef.set({
+            asaasPaymentId: paymentData.id,
+            userId: uid,
+            status: 'PENDING',
+            totalValue: totalValue,
+            paymentMethod: 'PIX',
+            createdAt: new Date().toISOString(),
+            cart: body.cart, // Salva o carrinho junto com o pagamento
+        });
+
+        const internalPaymentId = newPaymentRef.key;
+
+        // ETAPA 3: Buscar o QR Code usando o ID do pagamento
         const getQrCodeResponse = await fetch(`${process.env.ASAAS_API_URL}/payments/${paymentData.id}/pixQrCode`, {
             method: 'GET',
             headers: {
-              'accept': 'application/json',
-              'access_token': process.env.ASAAS_API_KEY || '',
+                'accept': 'application/json',
+                'access_token': process.env.ASAAS_API_KEY || '',
             },
         });
 
         if (!getQrCodeResponse.ok) {
             const errorData = await getQrCodeResponse.json();
-            console.error('Erro ao buscar QR Code PIX no Asaas (Etapa 2):', errorData);
+            console.error('Erro ao buscar QR Code PIX no Asaas (Etapa 3):', errorData);
+            // Atualiza o status no Firebase para falha
+            await newPaymentRef.update({ status: 'FAILED_QR_CODE_FETCH' });
             return NextResponse.json({ error: 'Falha ao obter QR Code do PIX.', details: errorData }, { status: 500 });
         }
 
         const qrCodeData = await getQrCodeResponse.json();
         
         const pixData = {
-          qrCode: qrCodeData.encodedImage,
-          payload: qrCodeData.payload,
-          expirationDate: paymentData.dueDate,
+            qrCode: qrCodeData.encodedImage,
+            payload: qrCodeData.payload,
+            expirationDate: paymentData.dueDate,
+            internalPaymentId: internalPaymentId, // Retorna nosso ID interno para o cliente
         };
 
         return NextResponse.json(pixData);
