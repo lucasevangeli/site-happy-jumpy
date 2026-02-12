@@ -73,6 +73,10 @@ export async function POST(request: Request) {
   
         const ticketsRef = db.ref('tickets');
         const newTicketRef = ticketsRef.push(); // Gera uma chave única para o novo ingresso
+
+        const createdAt = new Date();
+        const expiresAt = new Date(createdAt);
+        expiresAt.setDate(expiresAt.getDate() + 1); // Adiciona 1 dia para a expiração
   
         await newTicketRef.set({
           orderId: firebasePaymentId, // Referência ao nosso ID de pagamento interno
@@ -81,8 +85,9 @@ export async function POST(request: Request) {
           code: ticketCode,
           qrCode: '', // Pode ser gerado posteriormente (no cliente ou aqui)
           validated: false,
-          createdAt: new Date().toISOString(),
+          createdAt: createdAt.toISOString(),
           validatedAt: null,
+          expiresAt: expiresAt.toISOString(), // Adiciona a data de expiração
         });
   
         console.log(`Ingresso ${newTicketRef.key} criado para o usuário ${userId} com código ${ticketCode}.`);

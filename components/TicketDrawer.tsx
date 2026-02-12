@@ -10,7 +10,7 @@ import {
   SheetDescription,
   SheetFooter,
   SheetClose,
-} from '@/components/ui/sheet'; // Alterado de 'drawer' para 'sheet'
+} from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Ticket, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -21,9 +21,10 @@ import { ref, query, orderByChild, equalTo, get } from 'firebase/database';
 interface TicketData {
   id: string;
   code: string;
-  eventId:string;
+  eventId: string;
   validated: boolean;
   createdAt: string;
+  expiresAt?: string; // Adicionado como opcional para compatibilidade
 }
 
 // Props para o componente
@@ -49,7 +50,7 @@ export const TicketDrawer: React.FC<TicketDrawerProps> = ({ isOpen, onOpenChange
       setError(null);
 
       try {
-        const ticketsRef = ref(db, 'tickets'); // Corrigido para 'db'
+        const ticketsRef = ref(db, 'tickets');
         const userTicketsQuery = query(ticketsRef, orderByChild('userId'), equalTo(user.uid));
         const snapshot = await get(userTicketsQuery);
 
@@ -58,7 +59,7 @@ export const TicketDrawer: React.FC<TicketDrawerProps> = ({ isOpen, onOpenChange
           const loadedTickets: TicketData[] = Object.keys(ticketsData).map(key => ({
             id: key,
             ...ticketsData[key]
-          })).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()); // Ordena por mais recente
+          })).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
           setTickets(loadedTickets);
         } else {
           setTickets([]);
@@ -75,6 +76,26 @@ export const TicketDrawer: React.FC<TicketDrawerProps> = ({ isOpen, onOpenChange
       fetchTickets();
     }
   }, [isOpen, user]);
+
+  const getTicketStatusStyle = (ticket: TicketData) => {
+    if (ticket.validated) {
+      return 'border-red-500/50 bg-red-900/20'; // Utilizado
+    }
+    if (ticket.expiresAt && new Date(ticket.expiresAt) < new Date()) {
+      return 'border-yellow-500/50 bg-yellow-900/20'; // Expirado
+    }
+    return 'border-green-500/50 bg-green-900/20'; // Válido
+  };
+
+  const getTicketStatusText = (ticket: TicketData) => {
+    if (ticket.validated) {
+      return <p className="mt-2 text-sm font-bold text-red-400">INGRESSO JÁ UTILIZADO</p>;
+    }
+    if (ticket.expiresAt && new Date(ticket.expiresAt) < new Date()) {
+      return <p className="mt-2 text-sm font-bold text-yellow-400">INGRESSO EXPIRADO</p>;
+    }
+    return <p className="mt-2 text-sm font-bold text-green-400">AGUARDANDO VALIDAÇÃO</p>;
+  };
 
   const renderContent = () => {
     if (isLoading) {
@@ -96,12 +117,10 @@ export const TicketDrawer: React.FC<TicketDrawerProps> = ({ isOpen, onOpenChange
     return (
       <div className="py-4 space-y-4 flex-1 overflow-y-auto pr-2">
         {tickets.map((ticket) => (
-          <div key={ticket.id} className={`p-4 rounded-lg border ${ticket.validated ? 'border-red-500/50 bg-red-900/20' : 'border-green-500/50 bg-green-900/20'}`}>
+          <div key={ticket.id} className={`p-4 rounded-lg border ${getTicketStatusStyle(ticket)}`}>
             <p className="font-bold text-lg text-white">{ticket.eventId.replace(/_/g, ' ')}</p>
             <p className="text-sm text-gray-300">Código: <span className="font-mono bg-gray-800 p-1 rounded">{ticket.code}</span></p>
-            <p className={`mt-2 text-sm font-bold ${ticket.validated ? 'text-red-400' : 'text-green-400'}`}>
-              {ticket.validated ? 'INGRESSO JÁ UTILIZADO' : 'AGUARDANDO VALIDAÇÃO'}
-            </p>
+            {getTicketStatusText(ticket)}
           </div>
         ))}
       </div>
