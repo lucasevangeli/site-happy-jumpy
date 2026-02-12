@@ -33,7 +33,7 @@ const HeroSection = () => {
           muted // Inicia mudo, mas pode ser alterado
           playsInline
           className="w-full h-full object-cover"
-          src="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+          src="https://firebasestorage.googleapis.com/v0/b/happy-jumpy.firebasestorage.app/o/videoapresentacao%2FComercial%20Vila%20Trampolim.mp4?alt=media&token=a54e7b7e-4659-4f08-832c-e57415efc981"
         >
           Seu navegador não suporta o elemento de vídeo.
         </video>
