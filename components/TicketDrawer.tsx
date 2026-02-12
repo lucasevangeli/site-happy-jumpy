@@ -22,9 +22,11 @@ interface TicketData {
   id: string;
   code: string;
   eventId: string;
+  itemName: string;
+  itemDescription?: string;
   validated: boolean;
   createdAt: string;
-  expiresAt?: string; // Adicionado como opcional para compatibilidade
+  expiresAt?: string;
 }
 
 // Props para o componente
@@ -45,15 +47,12 @@ export const TicketDrawer: React.FC<TicketDrawerProps> = ({ isOpen, onOpenChange
         setTickets([]);
         return;
       }
-
       setIsLoading(true);
       setError(null);
-
       try {
         const ticketsRef = ref(db, 'tickets');
         const userTicketsQuery = query(ticketsRef, orderByChild('userId'), equalTo(user.uid));
         const snapshot = await get(userTicketsQuery);
-
         if (snapshot.exists()) {
           const ticketsData = snapshot.val();
           const loadedTickets: TicketData[] = Object.keys(ticketsData).map(key => ({
@@ -71,58 +70,52 @@ export const TicketDrawer: React.FC<TicketDrawerProps> = ({ isOpen, onOpenChange
         setIsLoading(false);
       }
     };
-
-    if (isOpen) {
-      fetchTickets();
-    }
+    if (isOpen) fetchTickets();
   }, [isOpen, user]);
 
-  const getTicketStatusStyle = (ticket: TicketData) => {
+  const getTicketStatus = (ticket: TicketData) => {
     if (ticket.validated) {
-      return 'border-red-500/50 bg-red-900/20'; // Utilizado
+      return { text: 'UTILIZADO', pillClass: 'bg-red-900 text-red-300', borderClass: 'border-red-500/30' };
     }
     if (ticket.expiresAt && new Date(ticket.expiresAt) < new Date()) {
-      return 'border-yellow-500/50 bg-yellow-900/20'; // Expirado
+      return { text: 'EXPIRADO', pillClass: 'bg-yellow-900 text-yellow-300', borderClass: 'border-yellow-500/30' };
     }
-    return 'border-green-500/50 bg-green-900/20'; // Válido
-  };
-
-  const getTicketStatusText = (ticket: TicketData) => {
-    if (ticket.validated) {
-      return <p className="mt-2 text-sm font-bold text-red-400">INGRESSO JÁ UTILIZADO</p>;
-    }
-    if (ticket.expiresAt && new Date(ticket.expiresAt) < new Date()) {
-      return <p className="mt-2 text-sm font-bold text-yellow-400">INGRESSO EXPIRADO</p>;
-    }
-    return <p className="mt-2 text-sm font-bold text-green-400">AGUARDANDO VALIDAÇÃO</p>;
+    return { text: 'VÁLIDO', pillClass: 'bg-green-900 text-green-300', borderClass: 'border-green-500/30' };
   };
 
   const renderContent = () => {
     if (isLoading) {
-      return (
-        <div className="flex justify-center items-center h-48">
-          <Loader2 className="h-8 w-8 animate-spin text-green-400" />
-        </div>
-      );
+      return <div className="flex justify-center items-center h-48"><Loader2 className="h-8 w-8 animate-spin text-green-400" /></div>;
     }
-
     if (error) {
       return <p className="text-center text-red-400 py-8">{error}</p>;
     }
-
     if (tickets.length === 0) {
       return <p className="text-center text-gray-400 py-8">Você ainda não possui ingressos.</p>;
     }
-
     return (
-      <div className="py-4 space-y-4 flex-1 overflow-y-auto pr-2">
-        {tickets.map((ticket) => (
-          <div key={ticket.id} className={`p-4 rounded-lg border ${getTicketStatusStyle(ticket)}`}>
-            <p className="font-bold text-lg text-white">{ticket.eventId.replace(/_/g, ' ')}</p>
-            <p className="text-sm text-gray-300">Código: <span className="font-mono bg-gray-800 p-1 rounded">{ticket.code}</span></p>
-            {getTicketStatusText(ticket)}
-          </div>
-        ))}
+      <div className="py-4 space-y-6 flex-1 overflow-y-auto pr-4">
+        {tickets.map((ticket) => {
+          const status = getTicketStatus(ticket);
+          return (
+            <div key={ticket.id} className={`bg-gray-800/50 rounded-xl shadow-lg overflow-hidden border ${status.borderClass}`}>
+              <div className="p-5">
+                <span className={`px-3 py-1 text-xs font-semibold rounded-full ${status.pillClass}`}>{status.text}</span>
+                <h3 className="text-xl font-bold text-white mt-3">{ticket.itemName}</h3>
+                {ticket.itemDescription && <p className="text-sm text-gray-400">{ticket.itemDescription}</p>}
+              </div>
+              <div className="relative px-5">
+                <div className="absolute -left-1 -top-3.5 bg-black h-7 w-7 rounded-full"></div>
+                <div className="border-t-2 border-dashed border-gray-600"></div>
+                <div className="absolute -right-1 -top-3.5 bg-black h-7 w-7 rounded-full"></div>
+              </div>
+              <div className="p-5 text-center">
+                <p className="text-sm text-gray-400">Código de Validação</p>
+                <p className="text-2xl font-mono font-bold text-green-400 tracking-widest mt-1">{ticket.code}</p>
+              </div>
+            </div>
+          );
+        })}
       </div>
     );
   };
@@ -139,9 +132,7 @@ export const TicketDrawer: React.FC<TicketDrawerProps> = ({ isOpen, onOpenChange
             Apresente o código na entrada do evento para validação.
           </SheetDescription>
         </SheetHeader>
-        
         {renderContent()}
-
         <SheetFooter className="mt-auto pt-4">
           <SheetClose asChild>
             <Button variant="outline" className="w-full bg-transparent text-gray-300 border-gray-600 hover:bg-gray-800 hover:text-white">

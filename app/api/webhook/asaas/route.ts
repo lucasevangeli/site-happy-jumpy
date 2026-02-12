@@ -61,7 +61,11 @@ export async function POST(request: Request) {
       } else {
         // Assumindo que o eventId está no primeiro item do carrinho.
         // O ID do produto é usado como ID do evento.
-        const eventId = cart[0].id || 'EV_DEFAULT';
+        const firstItem = cart[0];
+        const eventId = firstItem.id || 'EV_DEFAULT';
+        const itemName = firstItem.name || 'Ingresso';
+        const itemDescription = firstItem.description || `Acesso ao evento ${itemName}`;
+
 
         // Gera um código de ingresso único. Ex: "EV_D-G8J2K9P0"
         const generateTicketCode = (prefix: string) => {
@@ -82,6 +86,8 @@ export async function POST(request: Request) {
           orderId: firebasePaymentId, // Referência ao nosso ID de pagamento interno
           userId: userId,
           eventId: eventId,
+          itemName: itemName, // Adicionado
+          itemDescription: itemDescription, // Adicionado
           code: ticketCode,
           qrCode: '', // Pode ser gerado posteriormente (no cliente ou aqui)
           validated: false,
