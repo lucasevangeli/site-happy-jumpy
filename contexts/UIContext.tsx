@@ -6,12 +6,15 @@ interface UIContextType {
   isCartOpen: boolean;
   isAuthOpen: boolean;
   isCheckoutDrawerOpen: boolean;
+  isTicketDrawerOpen: boolean; // Adicionado
   openCart: () => void;
   closeCart: () => void;
   openAuth: () => void;
   closeAuth: () => void;
   openCheckoutDrawer: () => void;
   closeCheckoutDrawer: () => void;
+  openTicketDrawer: () => void; // Adicionado
+  closeTicketDrawer: () => void; // Adicionado
   toggleCart: () => void;
   toggleAuth: () => void;
 }
@@ -22,6 +25,7 @@ export const UIProvider = ({ children }: { children: ReactNode }) => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isCheckoutDrawerOpen, setIsCheckoutDrawerOpen] = useState(false);
+  const [isTicketDrawerOpen, setIsTicketDrawerOpen] = useState(false); // Adicionado
 
   const openCart = () => setIsCartOpen(true);
   const closeCart = () => setIsCartOpen(false);
@@ -34,17 +38,23 @@ export const UIProvider = ({ children }: { children: ReactNode }) => {
   const openCheckoutDrawer = () => setIsCheckoutDrawerOpen(true);
   const closeCheckoutDrawer = () => setIsCheckoutDrawerOpen(false);
 
+  const openTicketDrawer = () => setIsTicketDrawerOpen(true); // Adicionado
+  const closeTicketDrawer = () => setIsTicketDrawerOpen(false); // Adicionado
+
   return (
     <UIContext.Provider value={{ 
       isCartOpen, 
       isAuthOpen, 
       isCheckoutDrawerOpen,
+      isTicketDrawerOpen, // Adicionado
       openCart, 
       closeCart, 
       openAuth, 
       closeAuth, 
       openCheckoutDrawer,
       closeCheckoutDrawer,
+      openTicketDrawer, // Adicionado
+      closeTicketDrawer, // Adicionado
       toggleCart, 
       toggleAuth 
     }}>

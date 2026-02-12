@@ -1,0 +1,136 @@
+// components/TicketDrawer.tsx
+"use client";
+
+import React, { useState, useEffect } from 'react';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetFooter,
+  SheetClose,
+} from '@/components/ui/sheet'; // Alterado de 'drawer' para 'sheet'
+import { Button } from '@/components/ui/button';
+import { Ticket, Loader2 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { db } from '@/lib/firebase';
+import { ref, query, orderByChild, equalTo, get } from 'firebase/database';
+
+// Interface para a estrutura do ingresso
+interface TicketData {
+  id: string;
+  code: string;
+  eventId:string;
+  validated: boolean;
+  createdAt: string;
+}
+
+// Props para o componente
+interface TicketDrawerProps {
+  isOpen: boolean;
+  onOpenChange: (isOpen: boolean) => void;
+}
+
+export const TicketDrawer: React.FC<TicketDrawerProps> = ({ isOpen, onOpenChange }) => {
+  const { user } = useAuth();
+  const [tickets, setTickets] = useState<TicketData[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchTickets = async () => {
+      if (!user) {
+        setTickets([]);
+        return;
+      }
+
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const ticketsRef = ref(db, 'tickets'); // Corrigido para 'db'
+        const userTicketsQuery = query(ticketsRef, orderByChild('userId'), equalTo(user.uid));
+        const snapshot = await get(userTicketsQuery);
+
+        if (snapshot.exists()) {
+          const ticketsData = snapshot.val();
+          const loadedTickets: TicketData[] = Object.keys(ticketsData).map(key => ({
+            id: key,
+            ...ticketsData[key]
+          })).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()); // Ordena por mais recente
+          setTickets(loadedTickets);
+        } else {
+          setTickets([]);
+        }
+      } catch (err: any) {
+        console.error("Erro ao buscar ingressos:", err);
+        setError("Não foi possível carregar seus ingressos. Tente novamente mais tarde.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (isOpen) {
+      fetchTickets();
+    }
+  }, [isOpen, user]);
+
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div className="flex justify-center items-center h-48">
+          <Loader2 className="h-8 w-8 animate-spin text-green-400" />
+        </div>
+      );
+    }
+
+    if (error) {
+      return <p className="text-center text-red-400 py-8">{error}</p>;
+    }
+
+    if (tickets.length === 0) {
+      return <p className="text-center text-gray-400 py-8">Você ainda não possui ingressos.</p>;
+    }
+
+    return (
+      <div className="py-4 space-y-4 flex-1 overflow-y-auto pr-2">
+        {tickets.map((ticket) => (
+          <div key={ticket.id} className={`p-4 rounded-lg border ${ticket.validated ? 'border-red-500/50 bg-red-900/20' : 'border-green-500/50 bg-green-900/20'}`}>
+            <p className="font-bold text-lg text-white">{ticket.eventId.replace(/_/g, ' ')}</p>
+            <p className="text-sm text-gray-300">Código: <span className="font-mono bg-gray-800 p-1 rounded">{ticket.code}</span></p>
+            <p className={`mt-2 text-sm font-bold ${ticket.validated ? 'text-red-400' : 'text-green-400'}`}>
+              {ticket.validated ? 'INGRESSO JÁ UTILIZADO' : 'AGUARDANDO VALIDAÇÃO'}
+            </p>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  return (
+    <Sheet open={isOpen} onOpenChange={onOpenChange}>
+      <SheetContent className="w-full sm:max-w-md bg-black border-l border-purple-500/30 text-white flex flex-col">
+        <SheetHeader>
+          <SheetTitle className="flex items-center gap-2 text-2xl font-bold text-green-400">
+            <Ticket className="h-6 w-6" />
+            Meus Ingressos
+          </SheetTitle>
+          <SheetDescription className="text-gray-400">
+            Apresente o código na entrada do evento para validação.
+          </SheetDescription>
+        </SheetHeader>
+        
+        {renderContent()}
+
+        <SheetFooter className="mt-auto pt-4">
+          <SheetClose asChild>
+            <Button variant="outline" className="w-full bg-transparent text-gray-300 border-gray-600 hover:bg-gray-800 hover:text-white">
+              Fechar
+            </Button>
+          </SheetClose>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
+  );
+};

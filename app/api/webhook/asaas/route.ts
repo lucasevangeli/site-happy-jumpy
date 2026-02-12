@@ -50,6 +50,43 @@ export async function POST(request: Request) {
       });
 
       console.log(`Pagamento ${firebasePaymentId} (Asaas: ${asaasPaymentId}) atualizado para CONFIRMED.`);
+
+      // 5. Criar o ingresso no Firebase Realtime Database
+      const paymentData = snapshot.val()[firebasePaymentId];
+      // A API de checkout salva os itens do carrinho na propriedade 'cart'
+      const { userId, cart } = paymentData;
+
+      if (!userId || !cart || cart.length === 0) {
+        console.error(`Dados insuficientes (userId ou cart) no pagamento ${firebasePaymentId} para gerar o ingresso.`);
+      } else {
+        // Assumindo que o eventId está no primeiro item do carrinho.
+        // O ID do produto é usado como ID do evento.
+        const eventId = cart[0].id || 'EV_DEFAULT';
+
+        // Gera um código de ingresso único. Ex: "EV_D-G8J2K9P0"
+        const generateTicketCode = (prefix: string) => {
+          const randomPart = Math.random().toString(36).substring(2, 10).toUpperCase();
+          return `${prefix.substring(0, 4).toUpperCase()}-${randomPart}`;
+        };
+  
+        const ticketCode = generateTicketCode(eventId);
+  
+        const ticketsRef = db.ref('tickets');
+        const newTicketRef = ticketsRef.push(); // Gera uma chave única para o novo ingresso
+  
+        await newTicketRef.set({
+          orderId: firebasePaymentId, // Referência ao nosso ID de pagamento interno
+          userId: userId,
+          eventId: eventId,
+          code: ticketCode,
+          qrCode: '', // Pode ser gerado posteriormente (no cliente ou aqui)
+          validated: false,
+          createdAt: new Date().toISOString(),
+          validatedAt: null,
+        });
+  
+        console.log(`Ingresso ${newTicketRef.key} criado para o usuário ${userId} com código ${ticketCode}.`);
+      }
     } else {
       console.log('Webhook recebido, mas não é um evento de confirmação de pagamento:', body.event);
     }

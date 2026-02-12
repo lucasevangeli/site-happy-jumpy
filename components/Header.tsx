@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { ShoppingCart, Menu, X, User, Phone, Mail, MapPin } from 'lucide-react';
+import { ShoppingCart, Menu, X, User, Phone, Mail, MapPin, Ticket } from 'lucide-react'; // Adicionado Ticket
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { auth } from '@/lib/firebase';
@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import CartDrawer from './CartDrawer';
 import { AuthDrawer } from './AuthDrawer';
 import { CheckoutDrawer } from './CheckoutDrawer';
+import { TicketDrawer } from './TicketDrawer'; // Adicionado
 import { useUI } from '@/contexts/UIContext';
 import {
   DropdownMenu,
@@ -25,7 +26,13 @@ import { toast } from "sonner";
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { cart, getTotalItems, getTotalPrice } = useCart();
-  const { isCartOpen, openCart, closeCart, isAuthOpen, closeAuth, isCheckoutDrawerOpen, closeCheckoutDrawer, openAuth } = useUI();
+  const { 
+    isCartOpen, openCart, closeCart, 
+    isAuthOpen, closeAuth, 
+    isCheckoutDrawerOpen, closeCheckoutDrawer, 
+    openAuth,
+    isTicketDrawerOpen, openTicketDrawer, closeTicketDrawer // Adicionado
+  } = useUI();
   const { user } = useAuth(); // Pega o usuário do contexto de autenticação
 
   const handleLogout = async () => {
@@ -115,6 +122,17 @@ const Header = () => {
                                 )}
                               </div>
                               
+                              {/* Ícone de Ingresso - Visível apenas se o usuário estiver logado */}
+                              {user && (
+                                <div
+                                  onClick={openTicketDrawer}
+                                  className="relative flex items-center justify-center p-2 rounded-md cursor-pointer group"
+                                  aria-label="Meus Ingressos"
+                                >
+                                  <Ticket className="w-5 h-5 text-green-400 group-hover:text-green-300 transition-colors duration-200" />
+                                </div>
+                              )}
+
                                                 <div className="hidden md:block">
                                                   <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
@@ -234,6 +252,7 @@ const Header = () => {
         cart={cart}
         totalValue={getTotalPrice()}
       />
+      <TicketDrawer isOpen={isTicketDrawerOpen} onOpenChange={closeTicketDrawer} /> 
     </>
   );
 };
