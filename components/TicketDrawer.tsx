@@ -12,7 +12,7 @@ import {
   SheetClose,
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
-import { Ticket, Loader2 } from 'lucide-react';
+import { Ticket, Loader2, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase';
 import { ref, query, orderByChild, equalTo, get } from 'firebase/database';
@@ -40,6 +40,12 @@ export const TicketDrawer: React.FC<TicketDrawerProps> = ({ isOpen, onOpenChange
   const [tickets, setTickets] = useState<TicketData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [visibleCodes, setVisibleCodes] = useState<Record<string, boolean>>({});
+
+  const toggleCodeVisibility = (ticketId: string) => {
+    setVisibleCodes(prev => ({ ...prev, [ticketId]: !prev[ticketId] }));
+  };
+
 
   useEffect(() => {
     const fetchTickets = async () => {
@@ -111,7 +117,20 @@ export const TicketDrawer: React.FC<TicketDrawerProps> = ({ isOpen, onOpenChange
               </div>
               <div className="p-5 text-center">
                 <p className="text-sm text-gray-400">Código de Validação</p>
-                <p className="text-2xl font-mono font-bold text-green-400 tracking-widest mt-1">{ticket.code}</p>
+                <div
+                  className="flex items-center justify-center gap-2 mt-2 cursor-pointer group"
+                  onClick={() => toggleCodeVisibility(ticket.id)}
+                  title="Clique para mostrar/ocultar o código"
+                >
+                  <p className="text-2xl font-mono font-bold text-green-400 tracking-widest leading-none">
+                    {visibleCodes[ticket.id] ? ticket.code : '****-****'}
+                  </p>
+                  {visibleCodes[ticket.id] ? (
+                    <EyeOff className="h-6 w-6 text-gray-500 group-hover:text-gray-300 transition-colors" />
+                  ) : (
+                    <Eye className="h-6 w-6 text-gray-500 group-hover:text-gray-300 transition-colors" />
+                  )}
+                </div>
               </div>
             </div>
           );
