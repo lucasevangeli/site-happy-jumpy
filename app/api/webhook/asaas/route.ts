@@ -29,7 +29,7 @@ export async function POST(request: Request) {
       // 3. Encontrar o pagamento correspondente no Firebase
       const db = admin.database();
       const paymentsRef = db.ref('payments');
-      
+
       const snapshot = await paymentsRef.orderByChild('asaasPaymentId').equalTo(asaasPaymentId).once('value');
 
       if (!snapshot.exists()) {
@@ -58,6 +58,34 @@ export async function POST(request: Request) {
       if (!userId || !cart || !Array.isArray(cart) || cart.length === 0) {
         console.error(`Dados insuficientes (userId ou cart) no pagamento ${firebasePaymentId} para gerar ingressos.`);
       } else {
+        // Buscar dados do usuário para ter o nome na venda
+        const userSnapshot = await db.ref(`users/${userId}`).once('value');
+        const userData = userSnapshot.val() || {};
+
+        // 5. Criar um registro central de venda para o estoque
+        const salesRef = db.ref('sales');
+        const saleId = salesRef.push().key;
+
+        const totalAmount = paymentData.totalValue || 0;
+        const paymentMethod = paymentData.paymentMethod || 'ASAAS';
+
+        await salesRef.child(saleId!).set({
+          id: saleId,
+          total_amount: totalAmount,
+          payment_method: paymentMethod,
+          created_at: new Date().toISOString(),
+          created_by: 'Site',
+          customer_id: userId,
+          customer_name: userData.fullName || 'Cliente Web',
+          items: cart.map(item => ({
+            item_id: item.id,
+            title: item.name || 'Produto',
+            quantity: item.quantity || 1,
+            unit_price: item.price || 0,
+            type: 'product' // Site não diferencia muito no carrinho, mas ajuda a Cloud Function
+          }))
+        });
+
         const ticketsRef = db.ref('tickets');
         const createdAt = new Date();
         const expiresAt = new Date(createdAt);
@@ -73,14 +101,14 @@ export async function POST(request: Request) {
           const quantity = item.quantity || 1; // Garante que a quantidade seja pelo menos 1
           const itemName = item.name || 'Ingresso';
           const itemDescription = item.description || `Acesso ao evento ${itemName}`;
-          
+
           // Cria um ingresso para cada unidade do item
           for (let i = 0; i < quantity; i++) {
             const newTicketRef = ticketsRef.push(); // Gera uma chave única para o novo ingresso
             const ticketCode = generateTicketCode(item.id || 'TKT');
-      
+
             await newTicketRef.set({
-              orderId: firebasePaymentId,      // Referência ao nosso ID de pagamento interno
+              orderId: saleId,      // Referência ao ID da VENDA para consistência com PDV
               userId: userId,
               productId: item.id,              // << O ID do produto que você pediu
               eventId: item.id,                // Mantido para compatibilidade
@@ -93,8 +121,8 @@ export async function POST(request: Request) {
               validatedAt: null,
               expiresAt: expiresAt.toISOString(),
             });
-      
-            console.log(`Ingresso ${newTicketRef.key} (item: ${itemName}, ${i+1}/${quantity}) criado para o usuário ${userId} com código ${ticketCode}.`);
+
+            console.log(`Ingresso ${newTicketRef.key} (item: ${itemName}, ${i + 1}/${quantity}) criado para o usuário ${userId} com código ${ticketCode}.`);
           }
         }
       }
