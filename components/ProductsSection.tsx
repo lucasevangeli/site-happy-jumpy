@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Clock, Star, Zap, ShoppingCart, Check } from 'lucide-react';
@@ -14,6 +14,8 @@ const ProductsSection = () => {
   const { addToCart } = useCart();
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const productsRef = ref(db, 'wristbands');
@@ -27,8 +29,8 @@ const ProductsSection = () => {
             name: productData.title,
             description: productData.description,
             price: productData.price,
-            duration: `${productData.duration_minutes} minutos`,
-            // color: productData.color, // Opcional, se for usar a cor
+            duration: productData.duration_minutes ? `${productData.duration_minutes} min` : 'N/A',
+            imageUrl: productData.photo_url || '',
           };
         });
         setProducts(productsArray);
@@ -38,7 +40,6 @@ const ProductsSection = () => {
       setIsLoading(false);
     });
 
-    // Limpa o listener quando o componente é desmontado
     return () => unsubscribe();
   }, []);
 
@@ -49,16 +50,31 @@ const ProductsSection = () => {
     });
   };
 
-  const features = [
-    'Acesso a todas as atrações',
-    'Meias antiderrapantes incluídas',
-    'Armário para guardar pertences',
-    'Wi-Fi gratuito',
-  ];
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const container = e.currentTarget;
+    const scrollLeft = container.scrollLeft;
+    const itemWidth = container.offsetWidth;
+    if (itemWidth > 0) {
+      const newIndex = Math.round(scrollLeft / itemWidth);
+      if (newIndex !== activeIndex) {
+        setActiveIndex(newIndex);
+      }
+    }
+  };
+
+  const scrollTo = (index: number) => {
+    if (scrollRef.current) {
+      const itemWidth = scrollRef.current.offsetWidth;
+      scrollRef.current.scrollTo({
+        left: index * itemWidth,
+        behavior: 'smooth'
+      });
+    }
+  };
 
   const renderSkeletons = () => (
     Array.from({ length: 4 }).map((_, index) => (
-      <Card key={index} className="bg-black/50 backdrop-blur-lg border-2 border-green-500/30 p-4">
+      <Card key={index} className="bg-black/50 backdrop-blur-lg border-2 border-green-500/30 p-4 min-w-full md:min-w-0">
         <CardHeader className="items-center">
           <Skeleton className="w-16 h-16 rounded-full" />
           <Skeleton className="h-8 w-3/4 mt-4" />
@@ -104,81 +120,90 @@ const ProductsSection = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          {isLoading ? renderSkeletons() : products.map((product, index) => (
-            <Card
-              key={product.id}
-              className={`bg-black/50 backdrop-blur-lg border-2 transition-all duration-300 hover:scale-105 hover:shadow-2xl ${
-                // Aplica estilo especial ao último item como exemplo
-                index === products.length - 1
-                  ? 'border-purple-500 shadow-purple-500/20'
-                  : 'border-green-500/30 hover:border-green-500'
-              }`}
-            >
-              <CardHeader>
-                {index === products.length - 1 && (
-                  <div className="absolute top-4 right-4">
-                    <Star className="w-6 h-6 text-purple-400 fill-purple-400" />
-                  </div>
-                )}
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-green-400 to-purple-600 flex items-center justify-center">
-                  {index === products.length - 1 ? (
-                    <Zap className="w-8 h-8 text-white" />
-                  ) : (
-                    <Clock className="w-8 h-8 text-white" />
-                  )}
-                </div>
-                <CardTitle className="text-2xl text-center text-white">{product.name}</CardTitle>
-                <CardDescription className="text-center text-gray-400">
-                  {product.description}
-                </CardDescription>
-              </CardHeader>
-
-              <CardContent className="space-y-4">
-                <div className="text-center">
-                  <div className="text-4xl font-bold text-green-400">
-                    R$ {product.price.toFixed(2)}
-                  </div>
-                  <div className="text-sm text-gray-400 mt-1">{product.duration}</div>
-                </div>
-
-                <div className="space-y-2 pt-4 border-t border-purple-500/30">
-                  {features.map((feature, idx) => (
-                    <div key={idx} className="flex items-center space-x-2 text-sm text-gray-300">
-                      <Check className="w-4 h-4 text-green-400 flex-shrink-0" />
-                      <span>{feature}</span>
+        {/* Carousel Container */}
+        <div className="relative group/carousel">
+          <div
+            ref={scrollRef}
+            onScroll={handleScroll}
+            className="flex md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-8 overflow-x-auto md:overflow-x-visible snap-x snap-mandatory no-scrollbar scroll-smooth"
+          >
+            {isLoading ? renderSkeletons() : products.map((product, index) => (
+              <div
+                key={product.id}
+                onClick={() => handleAddToCart(product)}
+                className="min-w-full md:min-w-0 snap-center px-1 md:px-0"
+              >
+                <div className="group bg-[#111] border border-gray-800 rounded-2xl overflow-hidden hover:border-[#39FF14]/50 transition-all cursor-pointer flex flex-col shadow-xl h-full">
+                  {/* Image Container - Top */}
+                  <div className="relative aspect-square w-full bg-[#1a1a1a] overflow-hidden">
+                    {product.imageUrl ? (
+                      <img
+                        src={product.imageUrl}
+                        alt={product.name}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gray-900">
+                        <Clock className="w-12 h-12 text-gray-800" />
+                      </div>
+                    )}
+                    {/* Category Badge - Neon Green */}
+                    <div className="absolute top-4 left-4 bg-[#39FF14] px-3 py-1 rounded text-[10px] font-black text-black uppercase tracking-widest z-10 shadow-lg">
+                      Pulseira
                     </div>
-                  ))}
-                  {index === products.length - 1 && (
-                    <>
-                      <div className="flex items-center space-x-2 text-sm text-purple-400">
-                        <Check className="w-4 h-4 text-purple-400 flex-shrink-0" />
-                        <span>Fura-fila em todas atrações</span>
-                      </div>
-                      <div className="flex items-center space-x-2 text-sm text-purple-400">
-                        <Check className="w-4 h-4 text-purple-400 flex-shrink-0" />
-                        <span>1 bebida grátis</span>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </CardContent>
 
-              <CardFooter>
-                <Button
-                  onClick={() => handleAddToCart(product)}
-                  className={`w-full ${
-                    index === products.length - 1
-                      ? 'bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800'
-                      : 'bg-gradient-to-r from-green-400 to-green-600 hover:from-green-500 hover:to-green-700'
-                  } text-white font-semibold`}
-                >
-                  <ShoppingCart className="w-4 h-4 mr-2" />
-                  Adicionar ao Carrinho
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
+                    {/* Gradient Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60" />
+                  </div>
+
+                  {/* Content Section */}
+                  <div className="p-6 flex flex-col flex-1">
+                    <div className="flex justify-between items-start mb-4">
+                      <h3 className="text-white font-black text-xl leading-tight">
+                        {product.name}
+                      </h3>
+                      <div className="flex items-center gap-1.5 bg-gray-900/80 px-2 py-1 rounded-md border border-gray-800">
+                        <Clock className="w-3.5 h-3.5 text-[#39FF14]" />
+                        <span className="text-gray-300 text-[11px] font-bold">{product.duration}</span>
+                      </div>
+                    </div>
+
+                    <p className="text-gray-500 text-sm line-clamp-2 mb-6">
+                      {product.description || 'Acesso completo a todas as atrações e diversão garantida para toda a família!'}
+                    </p>
+
+                    <div className="mt-auto flex justify-between items-center">
+                      <div className="flex flex-col">
+                        <span className="text-gray-500 text-[10px] uppercase font-bold tracking-tight">Investimento</span>
+                        <span className="text-[#39FF14] font-black text-3xl leading-none">
+                          R$ {product.price.toFixed(2)}
+                        </span>
+                      </div>
+
+                      <div className="h-12 w-12 bg-[#39FF14] rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(57,255,20,0.4)] group-hover:scale-110 transition-transform">
+                        <ShoppingCart className="w-6 h-6 text-black font-bold" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Pagination Dots - Mobile Only */}
+          {!isLoading && products.length > 0 && (
+            <div className="flex md:hidden justify-center gap-2 mb-8">
+              {products.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => scrollTo(idx)}
+                  className={`w-2 h-2 rounded-full transition-all ${activeIndex === idx ? 'bg-[#39FF14] w-4' : 'bg-gray-800'
+                    }`}
+                  aria-label={`Ir para slide ${idx + 1}`}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="bg-gradient-to-r from-green-500/10 to-purple-500/10 border border-green-500/30 rounded-2xl p-8 text-center">

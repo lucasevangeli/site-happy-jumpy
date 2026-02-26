@@ -108,3 +108,13 @@
     box-shadow: 0 0 12px 3px rgba(74, 222, 128, 0.9); /* Brilho mais intenso */
   }
 }
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
