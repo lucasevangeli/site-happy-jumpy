@@ -7,7 +7,7 @@ import { Clock, Star, Zap, ShoppingCart, Check } from 'lucide-react';
 import { useCart, Product } from '@/contexts/CartContext';
 import { toast } from 'sonner';
 import { db } from '@/lib/firebase';
-import { ref, onValue } from 'firebase/database';
+import { collection, onSnapshot } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const ProductsSection = () => {
@@ -18,14 +18,13 @@ const ProductsSection = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const productsRef = ref(db, 'wristbands');
-    const unsubscribe = onValue(productsRef, (snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        const productsArray: Product[] = Object.keys(data).map(key => {
-          const productData = data[key];
+    const productsCollection = collection(db, 'wristbands');
+    const unsubscribe = onSnapshot(productsCollection, (snapshot) => {
+      if (!snapshot.empty) {
+        const productsArray: Product[] = snapshot.docs.map(doc => {
+          const productData = doc.data();
           return {
-            id: key,
+            id: doc.id,
             name: productData.title,
             description: productData.description,
             price: productData.price,

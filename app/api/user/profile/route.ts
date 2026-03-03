@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import admin from '@/lib/firebase-admin';
+import { getFirestore } from 'firebase-admin/firestore';
 
 export async function POST(request: Request) {
   // 1. Autenticação do usuário via Firebase Auth
@@ -11,7 +12,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Token de autorização ausente ou mal formatado.' }, { status: 401 });
   }
   const token = authorization.split('Bearer ')[1];
-  
+
   let decodedToken;
   try {
     decodedToken = await admin.auth().verifyIdToken(token);
@@ -23,9 +24,9 @@ export async function POST(request: Request) {
 
   try {
     // 2. Obter os dados do perfil do corpo da requisição
-    const { 
-      fullName, 
-      phone, 
+    const {
+      fullName,
+      phone,
       birthDate,
       cpfCnpj,
       address,
@@ -42,9 +43,10 @@ export async function POST(request: Request) {
       }
     }
 
-    // 3. Salvar os dados iniciais no Firebase Realtime Database
-    const db = admin.database();
-    const userRef = db.ref(`users/${uid}`);
+    // 3. Salvar os dados iniciais no Firestore (banco 'happy')
+    const firestore = getFirestore('happy');
+    const userDocRef = firestore.collection('users').doc(uid);
+
     const userProfileData = {
       email,
       fullName,
@@ -59,8 +61,8 @@ export async function POST(request: Request) {
       profileComplete: true,
       updatedAt: new Date().toISOString(),
     };
-    
-    await userRef.update(userProfileData);
+
+    await userDocRef.set(userProfileData, { merge: true });
 
     // 4. Criar o cliente no Asaas
     let asaasCustomerId = null;
@@ -98,10 +100,10 @@ export async function POST(request: Request) {
     } catch (asaasError) {
       console.error('Exceção ao chamar a API do Asaas:', asaasError);
     }
-    
+
     // 5. Se o cliente Asaas foi criado, salva o ID no Firebase
     if (asaasCustomerId) {
-      await userRef.update({ asaasCustomerId });
+      await userDocRef.update({ asaasCustomerId });
     }
 
     return NextResponse.json({ message: 'Perfil atualizado com sucesso!', asaasCustomerId });

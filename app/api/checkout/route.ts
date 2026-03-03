@@ -1,17 +1,16 @@
-// app/api/checkout/route.ts
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import admin from '@/lib/firebase-admin';
+import { getFirestore } from 'firebase-admin/firestore';
 
 // Função para obter dados do usuário, incluindo o asaasCustomerId
 async function getUserData(uid: string) {
-  const db = admin.database();
-  const userRef = db.ref(`users/${uid}`);
-  const snapshot = await userRef.once('value');
-  if (!snapshot.exists()) {
+  const firestore = getFirestore('happy');
+  const userDoc = await firestore.collection('users').doc(uid).get();
+  if (!userDoc.exists) {
     return null;
   }
-  return snapshot.val();
+  return userDoc.data();
 }
 
 export async function POST(request: Request) {
@@ -22,7 +21,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Token de autorização ausente ou mal formatado.' }, { status: 401 });
   }
   const token = authorization.split('Bearer ')[1];
-  
+
   let decodedToken;
   try {
     decodedToken = await admin.auth().verifyIdToken(token);
@@ -93,103 +92,110 @@ export async function POST(request: Request) {
         console.log("DEBUG: Resposta da criação do pagamento:", paymentData);
 
         if (!paymentData.id) {
-            return NextResponse.json({ error: 'ID do pagamento não retornado pelo Asaas.' }, { status: 500 });
+          return NextResponse.json({ error: 'ID do pagamento não retornado pelo Asaas.' }, { status: 500 });
         }
 
-        // ETAPA 2: Salvar o estado inicial do pagamento no Firebase Realtime Database
-        const db = admin.database();
-        const paymentsRef = db.ref('payments');
-        const newPaymentRef = paymentsRef.push(); // Gera uma nova chave única
+        // ETAPA 2: Salvar o estado inicial do pagamento no Firebase Firestore
+        const firestore = getFirestore('happy');
+        const paymentDocRef = firestore.collection('payments').doc();
 
-        await newPaymentRef.set({
-            asaasPaymentId: paymentData.id,
-            userId: uid,
-            status: 'PENDING',
-            totalValue: totalValue,
-            paymentMethod: 'PIX',
-            createdAt: new Date().toISOString(),
-            cart: body.cart, // Salva o carrinho junto com o pagamento
+        await paymentDocRef.set({
+          id: paymentDocRef.id,
+          asaasPaymentId: paymentData.id,
+          userId: uid,
+          status: 'PENDING',
+          totalValue: totalValue,
+          paymentMethod: 'PIX',
+          createdAt: new Date().toISOString(),
+          cart: body.cart,
         });
 
-        const internalPaymentId = newPaymentRef.key;
+        const internalPaymentId = paymentDocRef.id;
 
         // ETAPA 3: Buscar o QR Code usando o ID do pagamento
         const getQrCodeResponse = await fetch(`${process.env.ASAAS_API_URL}/payments/${paymentData.id}/pixQrCode`, {
-            method: 'GET',
-            headers: {
-                'accept': 'application/json',
-                'access_token': process.env.ASAAS_API_KEY || '',
-            },
+          method: 'GET',
+          headers: {
+            'accept': 'application/json',
+            'access_token': process.env.ASAAS_API_KEY || '',
+          },
         });
 
         if (!getQrCodeResponse.ok) {
-            const errorData = await getQrCodeResponse.json();
-            console.error('Erro ao buscar QR Code PIX no Asaas (Etapa 3):', errorData);
-            // Atualiza o status no Firebase para falha
-            await newPaymentRef.update({ status: 'FAILED_QR_CODE_FETCH' });
-            return NextResponse.json({ error: 'Falha ao obter QR Code do PIX.', details: errorData }, { status: 500 });
+          const errorData = await getQrCodeResponse.json();
+          console.error('Erro ao buscar QR Code PIX no Asaas (Etapa 3):', errorData);
+          // Atualiza o status no Firebase para falha
+          await paymentDocRef.update({ status: 'FAILED_QR_CODE_FETCH' });
+          return NextResponse.json({ error: 'Falha ao obter QR Code do PIX.', details: errorData }, { status: 500 });
         }
 
         const qrCodeData = await getQrCodeResponse.json();
-        
+
         const pixData = {
-            qrCode: qrCodeData.encodedImage,
-            payload: qrCodeData.payload,
-            expirationDate: paymentData.dueDate,
-            internalPaymentId: internalPaymentId, // Retorna nosso ID interno para o cliente
+          qrCode: qrCodeData.encodedImage,
+          payload: qrCodeData.payload,
+          expirationDate: paymentData.dueDate,
+          internalPaymentId: internalPaymentId, // Retorna nosso ID interno para o cliente
         };
 
         return NextResponse.json(pixData);
       }
-        
+
       case 'CREDIT_CARD': {
-        if (!creditCard) {
-          return NextResponse.json({ error: 'Dados do cartão de crédito são obrigatórios.' }, { status: 400 });
+        const { creditCard, creditCardToken } = body;
+
+        if (!creditCard && !creditCardToken) {
+          return NextResponse.json({ error: 'Dados do cartão ou token são obrigatórios.' }, { status: 400 });
         }
 
-        const paymentPayload = {
-            customer: asaasCustomerId,
-            billingType: 'CREDIT_CARD',
-            dueDate: formattedDueDate,
-            value: totalValue,
-            description: `Pedido de ${userData.fullName}`,
-            creditCard: {
-                holderName: creditCard.holderName,
-                number: creditCard.number,
-                expiryMonth: creditCard.expiryMonth,
-                expiryYear: creditCard.expiryYear,
-                ccv: creditCard.ccv,
-            },
-            creditCardHolderInfo: {
-                name: userData.fullName,
-                email: userData.email,
-                cpfCnpj: userData.cpfCnpj,
-                postalCode: userData.postalCode,
-                addressNumber: userData.addressNumber,
-                phone: userData.phone,
-            },
+        const paymentPayload: any = {
+          customer: asaasCustomerId,
+          billingType: 'CREDIT_CARD',
+          dueDate: formattedDueDate,
+          value: totalValue,
+          description: `Pedido de ${userData.fullName}`,
         };
 
+        if (creditCardToken) {
+          paymentPayload.creditCardToken = creditCardToken;
+        } else {
+          paymentPayload.creditCard = {
+            holderName: creditCard.holderName,
+            number: creditCard.number,
+            expiryMonth: creditCard.expiryMonth,
+            expiryYear: creditCard.expiryYear,
+            ccv: creditCard.ccv,
+          };
+          paymentPayload.creditCardHolderInfo = {
+            name: userData.fullName,
+            email: userData.email,
+            cpfCnpj: userData.cpfCnpj,
+            postalCode: userData.postalCode,
+            addressNumber: userData.addressNumber,
+            phone: userData.phone,
+          };
+        }
+
         const asaasResponse = await fetch(`${process.env.ASAAS_API_URL}/payments`, {
-            method: 'POST',
-            headers: {
-              'accept': 'application/json',
-              'content-type': 'application/json',
-              'access_token': process.env.ASAAS_API_KEY || '',
-            },
-            body: JSON.stringify(paymentPayload),
+          method: 'POST',
+          headers: {
+            'accept': 'application/json',
+            'content-type': 'application/json',
+            'access_token': process.env.ASAAS_API_KEY || '',
+          },
+          body: JSON.stringify(paymentPayload),
         });
 
         if (!asaasResponse.ok) {
-            const errorData = await asaasResponse.json();
-            console.error('Erro ao criar cobrança com Cartão de Crédito no Asaas:', errorData);
-            return NextResponse.json({ error: 'Falha ao processar pagamento com cartão.', details: errorData }, { status: 500 });
+          const errorData = await asaasResponse.json();
+          console.error('Erro ao criar cobrança com Cartão de Crédito no Asaas:', errorData);
+          return NextResponse.json({ error: 'Falha ao processar pagamento com cartão.', details: errorData }, { status: 500 });
         }
-        
+
         const paymentData = await asaasResponse.json();
         return NextResponse.json(paymentData);
       }
-        
+
       default:
         return NextResponse.json({ error: 'Método de pagamento não suportado.' }, { status: 400 });
     }

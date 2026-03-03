@@ -16,9 +16,9 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { auth, db } from '@/lib/firebase';
-import { ref, onValue, off } from "firebase/database";
+import { doc, onSnapshot, collection, getDocs } from "firebase/firestore";
 import Image from 'next/image';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, CreditCard as CreditCardIcon, Plus } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext'; // Import useCart
 
 interface CheckoutDrawerProps {
@@ -35,47 +35,66 @@ export function CheckoutDrawer({ isOpen, onOpenChange, cart, totalValue }: Check
   const { clearCart } = useCart(); // Get clearCart function
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState<CheckoutStep>('selection');
-  
+
   // PIX State
   const [pixData, setPixData] = useState<{ qrCode: string; payload: string } | null>(null);
   const [internalPaymentId, setInternalPaymentId] = useState<string | null>(null);
 
   // Credit Card State
+  const [savedCards, setSavedCards] = useState<any[]>([]);
+  const [selectedCardId, setSelectedCardId] = useState<string | 'new'>('new');
   const [cardHolderName, setCardHolderName] = useState('');
   const [cardNumber, setCardNumber] = useState('');
   const [cardExpiry, setCardExpiry] = useState('');
   const [cardCcv, setCardCcv] = useState('');
   const [cardPaymentResult, setCardPaymentResult] = useState<any>(null);
 
-  // Effect to listen for payment status changes on Firebase
+  // Effect to load saved cards
   useEffect(() => {
-    if (!internalPaymentId) return;
+    const fetchSavedCards = async () => {
+      const user = auth.currentUser;
+      if (!user || !isOpen) return;
 
-    const paymentRef = ref(db, 'payments/' + internalPaymentId);
+      try {
+        const cardsCollectionRef = collection(db, `users/${user.uid}/cards`);
+        const snapshot = await getDocs(cardsCollectionRef);
+        const cards = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setSavedCards(cards);
 
-    // Define the callback function beforehand to avoid reference errors
-    const listenerCallback = (snapshot: any) => {
-      const data = snapshot.val();
-      if (data && data.status === 'CONFIRMED') {
-        setStep('payment_confirmed');
-        clearCart();
-        toast({
-          title: 'Pagamento Confirmado!',
-          description: 'Seu pagamento foi recebido com sucesso.',
-          className: 'bg-green-600 text-white',
-        });
-        // Detach the listener using the named function
-        off(paymentRef, 'value', listenerCallback);
+        // If there are saved cards, default to the first one
+        if (cards.length > 0) {
+          setSelectedCardId(cards[0].id);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar cartões salvos:", error);
       }
     };
 
-    // Attach the listener
-    onValue(paymentRef, listenerCallback);
+    fetchSavedCards();
+  }, [isOpen]);
 
-    // Cleanup function
-    return () => {
-      off(paymentRef, 'value', listenerCallback);
-    };
+  // Effect to listen for payment status changes on Firebase Firestore
+  useEffect(() => {
+    if (!internalPaymentId) return;
+
+    const paymentDocRef = doc(db, 'payments', internalPaymentId);
+
+    const unsubscribe = onSnapshot(paymentDocRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        if (data && data.status === 'CONFIRMED') {
+          setStep('payment_confirmed');
+          clearCart();
+          toast({
+            title: 'Pagamento Confirmado!',
+            description: 'Seu pagamento foi recebido com sucesso.',
+            className: 'bg-green-600 text-white',
+          });
+        }
+      }
+    });
+
+    return () => unsubscribe();
   }, [internalPaymentId, toast, clearCart]); // Add clearCart to dependency array
 
 
@@ -129,10 +148,34 @@ export function CheckoutDrawer({ isOpen, onOpenChange, cart, totalValue }: Check
         return;
       }
       const token = await user.getIdToken();
-      
+
       const [expiryMonth, expiryYear] = cardExpiry.split('/');
       if (!expiryMonth || !expiryYear) {
         throw new Error('Data de validade do cartão inválida. Use o formato MM/AA.');
+      }
+
+      const bodyPayload: any = {
+        paymentMethod: 'CREDIT_CARD',
+        totalValue,
+        cart,
+      };
+
+      if (selectedCardId === 'new') {
+        const [expiryMonth, expiryYear] = cardExpiry.split('/');
+        if (!expiryMonth || !expiryYear) {
+          throw new Error('Data de validade do cartão inválida. Use o formato MM/AA.');
+        }
+        bodyPayload.creditCard = {
+          holderName: cardHolderName,
+          number: cardNumber.replace(/\s/g, ''),
+          expiryMonth,
+          expiryYear: `20${expiryYear}`,
+          ccv: cardCcv,
+        };
+      } else {
+        const selectedCard = savedCards.find(c => c.id === selectedCardId);
+        if (!selectedCard) throw new Error('Cartão selecionado não encontrado.');
+        bodyPayload.creditCardToken = selectedCard.creditCardToken;
       }
 
       const response = await fetch('/api/checkout', {
@@ -141,25 +184,14 @@ export function CheckoutDrawer({ isOpen, onOpenChange, cart, totalValue }: Check
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          paymentMethod: 'CREDIT_CARD',
-          totalValue,
-          cart,
-          creditCard: {
-            holderName: cardHolderName,
-            number: cardNumber.replace(/\s/g, ''),
-            expiryMonth,
-            expiryYear: `20${expiryYear}`,
-            ccv: cardCcv,
-          }
-        }),
+        body: JSON.stringify(bodyPayload),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.details?.errors?.[0]?.description || errorData.error || 'Falha no pagamento com cartão.');
       }
-      
+
       const data = await response.json();
       setCardPaymentResult(data);
       setStep('card_result');
@@ -183,7 +215,7 @@ export function CheckoutDrawer({ isOpen, onOpenChange, cart, totalValue }: Check
     setCardCcv('');
     setCardPaymentResult(null);
   };
-  
+
   const handleOpenChange = (open: boolean) => {
     if (!open) {
       resetState();
@@ -208,33 +240,85 @@ export function CheckoutDrawer({ isOpen, onOpenChange, cart, totalValue }: Check
         </div>
       </TabsContent>
       <TabsContent value="card">
-        <form onSubmit={handleCreditCardPayment} className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="cardHolderName" className="text-neutral-200">Nome no Cartão</Label>
-            <Input id="cardHolderName" value={cardHolderName} onChange={e => setCardHolderName(e.target.value)} placeholder="Como está escrito no cartão" required />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="cardNumber" className="text-neutral-200">Número do Cartão</Label>
-            <Input id="cardNumber" value={cardNumber} onChange={e => setCardNumber(e.target.value)} placeholder="0000 0000 0000 0000" required />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="cardExpiry" className="text-neutral-200">Validade (MM/AA)</Label>
-              <Input id="cardExpiry" value={cardExpiry} onChange={e => setCardExpiry(e.target.value)} placeholder="MM/AA" required />
+        <div className="space-y-6 py-4">
+          {savedCards.length > 0 && (
+            <div className="space-y-3">
+              <Label className="text-neutral-200">Seus Cartões Salvos</Label>
+              <div className="grid gap-3">
+                {savedCards.map(card => (
+                  <button
+                    key={card.id}
+                    onClick={() => setSelectedCardId(card.id)}
+                    className={`flex items-center justify-between p-4 rounded-xl border transition-all ${selectedCardId === card.id
+                        ? 'border-neon-green bg-neon-green/10'
+                        : 'border-neutral-800 bg-neutral-900/50 hover:border-neutral-700'
+                      }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <CreditCardIcon className={`w-5 h-5 ${selectedCardId === card.id ? 'text-neon-green' : 'text-neutral-500'}`} />
+                      <div className="text-left">
+                        <p className="text-sm font-bold text-white uppercase">{card.brand} **** {card.lastFourDigits}</p>
+                        <p className="text-[10px] text-neutral-500">Salvo em {new Date(card.createdAt).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                    {selectedCardId === card.id && <CheckCircle2 className="w-5 h-5 text-neon-green" />}
+                  </button>
+                ))}
+
+                <button
+                  onClick={() => setSelectedCardId('new')}
+                  className={`flex items-center gap-3 p-4 rounded-xl border transition-all ${selectedCardId === 'new'
+                      ? 'border-neon-green bg-neon-green/10'
+                      : 'border-neutral-800 bg-neutral-900/50 hover:border-neutral-700'
+                    }`}
+                >
+                  <Plus className={`w-5 h-5 ${selectedCardId === 'new' ? 'text-neon-green' : 'text-neutral-500'}`} />
+                  <span className="text-sm font-bold text-white">Usar outro cartão</span>
+                </button>
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="cardCcv" className="text-neutral-200">CCV</Label>
-              <Input id="cardCcv" value={cardCcv} onChange={e => setCardCcv(e.target.value)} placeholder="123" required />
-            </div>
-          </div>
-          <Button type="submit" disabled={isLoading} className="w-full bg-neon-green text-black hover:bg-neon-green/90 font-bold">
-            {isLoading ? 'Processando...' : `Pagar R$ ${totalValue.toFixed(2)}`}
-          </Button>
-        </form>
+          )}
+
+          {(selectedCardId === 'new' || savedCards.length === 0) && (
+            <form onSubmit={handleCreditCardPayment} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="cardHolderName" className="text-neutral-200">Nome no Cartão</Label>
+                <Input id="cardHolderName" value={cardHolderName} onChange={e => setCardHolderName(e.target.value)} placeholder="Como está escrito no cartão" required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="cardNumber" className="text-neutral-200">Número do Cartão</Label>
+                <Input id="cardNumber" value={cardNumber} onChange={e => setCardNumber(e.target.value)} placeholder="0000 0000 0000 0000" required />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="cardExpiry" className="text-neutral-200">Validade (MM/AA)</Label>
+                  <Input id="cardExpiry" value={cardExpiry} onChange={e => setCardExpiry(e.target.value)} placeholder="MM/AA" required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="cardCcv" className="text-neutral-200">CCV</Label>
+                  <Input id="cardCcv" value={cardCcv} onChange={e => setCardCcv(e.target.value)} placeholder="123" required />
+                </div>
+              </div>
+              <Button type="submit" disabled={isLoading} className="w-full bg-neon-green text-black hover:bg-neon-green/90 font-bold mt-2">
+                {isLoading ? 'Processando...' : `Pagar R$ ${totalValue.toFixed(2)}`}
+              </Button>
+            </form>
+          )}
+
+          {selectedCardId !== 'new' && savedCards.length > 0 && (
+            <Button
+              onClick={(e: any) => handleCreditCardPayment(e)}
+              disabled={isLoading}
+              className="w-full bg-neon-green text-black hover:bg-neon-green/90 font-bold"
+            >
+              {isLoading ? 'Processando...' : `Pagar com Cartão Salvo (R$ ${totalValue.toFixed(2)})`}
+            </Button>
+          )}
+        </div>
       </TabsContent>
     </Tabs>
   );
-  
+
   const renderPixGenerated = () => (
     <div className="py-4 text-center">
       <SheetTitle className="text-white mb-2">Aguardando Pagamento...</SheetTitle>
@@ -266,11 +350,11 @@ export function CheckoutDrawer({ isOpen, onOpenChange, cart, totalValue }: Check
 
   const renderPaymentConfirmed = () => (
     <div className="py-4 text-center flex flex-col items-center justify-center h-full">
-        <CheckCircle2 className="w-24 h-24 text-green-500 mb-4" />
-        <SheetTitle className="text-white mb-2">Pagamento Confirmado!</SheetTitle>
-        <p className="text-sm text-neutral-400">
-            Obrigado pela sua compra. Prepara-se para pular!
-        </p>
+      <CheckCircle2 className="w-24 h-24 text-green-500 mb-4" />
+      <SheetTitle className="text-white mb-2">Pagamento Confirmado!</SheetTitle>
+      <p className="text-sm text-neutral-400">
+        Obrigado pela sua compra. Prepara-se para pular!
+      </p>
     </div>
   );
 
@@ -287,7 +371,7 @@ export function CheckoutDrawer({ isOpen, onOpenChange, cart, totalValue }: Check
   );
 
   const renderStepContent = () => {
-    switch(step) {
+    switch (step) {
       case 'selection':
         return renderSelection();
       case 'pix_generated':

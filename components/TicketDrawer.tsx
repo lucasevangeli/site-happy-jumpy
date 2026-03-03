@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Ticket, Loader2, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase';
-import { ref, query, orderByChild, equalTo, get } from 'firebase/database';
+import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 
 // Interface para a estrutura do ingresso
 interface TicketData {
@@ -56,14 +56,16 @@ export const TicketDrawer: React.FC<TicketDrawerProps> = ({ isOpen, onOpenChange
       setIsLoading(true);
       setError(null);
       try {
-        const ticketsRef = ref(db, 'tickets');
-        const userTicketsQuery = query(ticketsRef, orderByChild('userId'), equalTo(user.uid));
-        const snapshot = await get(userTicketsQuery);
-        if (snapshot.exists()) {
-          const ticketsData = snapshot.val();
-          const loadedTickets: TicketData[] = Object.keys(ticketsData).map(key => ({
-            id: key,
-            ...ticketsData[key]
+        const ticketsCollection = collection(db, 'tickets');
+        const userTicketsQuery = query(
+          ticketsCollection,
+          where('userId', '==', user.uid)
+        );
+        const snapshot = await getDocs(userTicketsQuery);
+        if (!snapshot.empty) {
+          const loadedTickets: TicketData[] = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data() as Omit<TicketData, 'id'>
           })).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
           setTickets(loadedTickets);
         } else {

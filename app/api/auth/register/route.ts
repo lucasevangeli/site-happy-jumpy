@@ -1,6 +1,7 @@
 // app/api/auth/register/route.ts
 import { NextResponse } from 'next/server';
 import admin from '@/lib/firebase-admin';
+import { getFirestore } from 'firebase-admin/firestore';
 
 export async function POST(request: Request) {
   try {
@@ -19,11 +20,12 @@ export async function POST(request: Request) {
       password,
     });
 
-    // Cria um registro inicial para o usuário no Realtime Database
-    const db = admin.database();
-    const userRef = db.ref(`users/${userRecord.uid}`);
-    await userRef.set({
+    // Cria um registro inicial para o usuário no Firestore (banco 'happy')
+    const firestore = getFirestore('happy');
+    const userDocRef = firestore.collection('users').doc(userRecord.uid);
+    await userDocRef.set({
       email: userRecord.email,
+      uid: userRecord.uid,
       createdAt: new Date().toISOString(),
       profileComplete: false, // Flag para indicar que o perfil detalhado não foi preenchido
     });

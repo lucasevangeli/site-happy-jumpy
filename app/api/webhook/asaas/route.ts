@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import admin from '@/lib/firebase-admin';
+import { getFirestore } from 'firebase-admin/firestore';
 
 // Esta é a sua chave secreta para verificar a autenticidade do webhook
 // IMPORTANTE: O nome da variável deve ser ASAAS_WEBHOOK_TOKEN no seu .env.local
@@ -9,7 +10,6 @@ const ASAAS_WEBHOOK_TOKEN = process.env.ASAAS_WEBHOOK_TOKEN;
 export async function POST(request: Request) {
   // 1. Verificar o token de segurança do webhook
   const headersList = headers();
-  // O cabeçalho correto enviado pelo Asaas é 'Asaas-Access-Token'
   const asaasToken = headersList.get('Asaas-Access-Token');
 
   if (asaasToken !== ASAAS_WEBHOOK_TOKEN) {
@@ -26,50 +26,48 @@ export async function POST(request: Request) {
 
       console.log(`Recebido webhook para pagamento Asaas ID: ${asaasPaymentId} com status: ${asaasStatus}`);
 
-      // 3. Encontrar o pagamento correspondente no Firebase
-      const db = admin.database();
-      const paymentsRef = db.ref('payments');
+      // 3. Encontrar o pagamento correspondente no Firebase Firestore
+      const firestore = getFirestore('happy');
+      const paymentsRef = firestore.collection('payments');
 
-      const snapshot = await paymentsRef.orderByChild('asaasPaymentId').equalTo(asaasPaymentId).once('value');
+      const snapshot = await paymentsRef.where('asaasPaymentId', '==', asaasPaymentId).limit(1).get();
 
-      if (!snapshot.exists()) {
+      if (snapshot.empty) {
         console.warn(`Webhook recebido para asaasPaymentId ${asaasPaymentId}, mas não foi encontrado no Firebase.`);
-        // Retorna 200 para o Asaas não continuar tentando enviar um webhook para um pagamento que não nos interessa
         return NextResponse.json({ message: 'Pagamento não encontrado, mas webhook recebido.' });
       }
 
       // 4. Atualizar o status do pagamento no Firebase
-      // O snapshot contém um objeto onde as chaves são os IDs únicos do Firebase
-      const firebasePaymentId = Object.keys(snapshot.val())[0];
-      const paymentToUpdateRef = db.ref(`payments/${firebasePaymentId}`);
+      const paymentDoc = snapshot.docs[0];
+      const firebasePaymentId = paymentDoc.id;
 
-      await paymentToUpdateRef.update({
+      await paymentDoc.ref.update({
         status: 'CONFIRMED',
-        asaasStatus: asaasStatus, // Opcional: guardar o status exato do Asaas
+        asaasStatus: asaasStatus,
         updatedAt: new Date().toISOString(),
       });
 
       console.log(`Pagamento ${firebasePaymentId} (Asaas: ${asaasPaymentId}) atualizado para CONFIRMED.`);
 
-      // 5. Criar ingressos no Firebase Realtime Database para cada item no carrinho
-      const paymentData = snapshot.val()[firebasePaymentId];
+      // 5. Criar venda e ingressos no Firestore
+      const paymentData = paymentDoc.data();
       const { userId, cart } = paymentData;
 
       if (!userId || !cart || !Array.isArray(cart) || cart.length === 0) {
         console.error(`Dados insuficientes (userId ou cart) no pagamento ${firebasePaymentId} para gerar ingressos.`);
       } else {
         // Buscar dados do usuário para ter o nome na venda
-        const userSnapshot = await db.ref(`users/${userId}`).once('value');
-        const userData = userSnapshot.val() || {};
+        const userSnapshot = await firestore.collection('users').doc(userId).get();
+        const userData = userSnapshot.data() || {};
 
-        // 5. Criar um registro central de venda para o estoque
-        const salesRef = db.ref('sales');
-        const saleId = salesRef.push().key;
+        // 6. Criar um registro central de venda
+        const saleRef = firestore.collection('sales').doc();
+        const saleId = saleRef.id;
 
         const totalAmount = paymentData.totalValue || 0;
         const paymentMethod = paymentData.paymentMethod || 'ASAAS';
 
-        await salesRef.child(saleId!).set({
+        await saleRef.set({
           id: saleId,
           total_amount: totalAmount,
           payment_method: paymentMethod,
@@ -82,14 +80,14 @@ export async function POST(request: Request) {
             title: item.name || 'Produto',
             quantity: item.quantity || 1,
             unit_price: item.price || 0,
-            type: 'product' // Site não diferencia muito no carrinho, mas ajuda a Cloud Function
+            type: 'product'
           }))
         });
 
-        const ticketsRef = db.ref('tickets');
+        const ticketsRef = firestore.collection('tickets');
         const createdAt = new Date();
         const expiresAt = new Date(createdAt);
-        expiresAt.setDate(expiresAt.getDate() + 1); // Adiciona 1 dia para a expiração
+        expiresAt.setDate(expiresAt.getDate() + 1);
 
         const generateTicketCode = (prefix: string) => {
           const randomPart = Math.random().toString(36).substring(2, 10).toUpperCase();
@@ -98,20 +96,20 @@ export async function POST(request: Request) {
 
         // Itera sobre cada item do carrinho para criar os ingressos
         for (const item of cart) {
-          const quantity = item.quantity || 1; // Garante que a quantidade seja pelo menos 1
+          const quantity = item.quantity || 1;
           const itemName = item.name || 'Ingresso';
           const itemDescription = item.description || `Acesso ao evento ${itemName}`;
 
-          // Cria um ingresso para cada unidade do item
           for (let i = 0; i < quantity; i++) {
-            const newTicketRef = ticketsRef.push(); // Gera uma chave única para o novo ingresso
+            const newTicketRef = ticketsRef.doc();
             const ticketCode = generateTicketCode(item.id || 'TKT');
 
             await newTicketRef.set({
-              orderId: saleId,      // Referência ao ID da VENDA para consistência com PDV
+              id: newTicketRef.id,
+              orderId: saleId,
               userId: userId,
-              productId: item.id,              // << O ID do produto que você pediu
-              eventId: item.id,                // Mantido para compatibilidade
+              productId: item.id,
+              eventId: item.id,
               itemName: itemName,
               itemDescription: itemDescription,
               code: ticketCode,
@@ -122,7 +120,7 @@ export async function POST(request: Request) {
               expiresAt: expiresAt.toISOString(),
             });
 
-            console.log(`Ingresso ${newTicketRef.key} (item: ${itemName}, ${i + 1}/${quantity}) criado para o usuário ${userId} com código ${ticketCode}.`);
+            console.log(`Ingresso ${newTicketRef.id} (item: ${itemName}, ${i + 1}/${quantity}) criado para o usuário ${userId} com código ${ticketCode}.`);
           }
         }
       }
@@ -130,7 +128,6 @@ export async function POST(request: Request) {
       console.log('Webhook recebido, mas não é um evento de confirmação de pagamento:', body.event);
     }
 
-    // 5. Retornar uma resposta de sucesso para o Asaas
     return NextResponse.json({ message: 'Webhook recebido com sucesso.' });
 
   } catch (error: any) {

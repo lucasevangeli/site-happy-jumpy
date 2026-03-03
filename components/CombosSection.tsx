@@ -7,7 +7,7 @@ import { Gift, ShoppingCart, Check } from 'lucide-react';
 import { useCart, Product } from '@/contexts/CartContext';
 import { toast } from 'sonner';
 import { db } from '@/lib/firebase';
-import { ref, onValue } from 'firebase/database';
+import { collection, onSnapshot } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface ComboItem {
@@ -33,13 +33,12 @@ const CombosSection = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const combosRef = ref(db, 'combos');
-    const unsubscribe = onValue(combosRef, (snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        const combosArray: Combo[] = Object.keys(data).map(key => ({
-          id: key,
-          ...data[key],
+    const combosCollection = collection(db, 'combos');
+    const unsubscribe = onSnapshot(combosCollection, (snapshot) => {
+      if (!snapshot.empty) {
+        const combosArray: Combo[] = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data() as Omit<Combo, 'id'>,
         }));
         setCombos(combosArray);
       } else {
