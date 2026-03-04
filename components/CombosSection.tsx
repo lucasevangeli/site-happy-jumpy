@@ -139,13 +139,13 @@ const CombosSection = () => {
           <div
             ref={scrollRef}
             onScroll={handleScroll}
-            className="flex md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-8 overflow-x-auto md:overflow-x-visible snap-x snap-mandatory no-scrollbar scroll-smooth"
+            className="flex md:grid md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 mb-8 overflow-x-auto md:overflow-x-visible snap-x snap-mandatory no-scrollbar scroll-smooth"
           >
             {isLoading ? renderSkeletons() : combos.map((combo) => (
               <div
                 key={combo.id}
                 onClick={() => handleAddToCart(combo)}
-                className="min-w-full md:min-w-0 snap-center px-1 md:px-0"
+                className="min-w-[85%] sm:min-w-[70%] md:min-w-0 snap-center px-2 md:px-0"
               >
                 <div className="group bg-[#111] border border-gray-800 rounded-2xl overflow-hidden hover:border-[#39FF14]/50 transition-all cursor-pointer flex flex-col shadow-xl h-full">
                   {/* Image Container - Top */}
@@ -158,7 +158,6 @@ const CombosSection = () => {
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gray-900">
-                        <Gift className="w-12 h-12 text-gray-800" />
                       </div>
                     )}
                     {/* Category Badge - Neon Purple */}
@@ -171,19 +170,19 @@ const CombosSection = () => {
                   </div>
 
                   {/* Content Section */}
-                  <div className="p-6 flex flex-col flex-1">
-                    <h3 className="text-white font-black text-xl leading-tight mb-2">
+                  <div className="p-4 flex flex-col flex-1">
+                    <h3 className="text-white font-black text-lg leading-tight mb-2">
                       {combo.title}
                     </h3>
 
-                    <p className="text-gray-500 text-sm line-clamp-2 mb-4">
+                    <p className="text-gray-500 text-xs line-clamp-2 mb-3">
                       {combo.description || 'A melhor combinação de diversão e sabor para sua experiência ser completa!'}
                     </p>
 
-                    <div className="space-y-2 mb-6">
+                    <div className="space-y-1.5 mb-4">
                       {Object.values(combo.items).slice(0, 3).map((item, idx) => (
-                        <div key={idx} className="flex items-center gap-2 text-xs text-gray-400">
-                          <div className="w-1.5 h-1.5 rounded-full bg-[#39FF14]" />
+                        <div key={idx} className="flex items-center gap-1.5 text-[11px] text-gray-400">
+                          <div className="w-1 h-1 rounded-full bg-[#39FF14]" />
                           <span>{item.quantity}x {item.title}</span>
                         </div>
                       ))}
@@ -194,8 +193,8 @@ const CombosSection = () => {
 
                     <div className="mt-auto flex justify-between items-center">
                       <div className="flex flex-col">
-                        <span className="text-gray-500 text-[10px] uppercase font-bold tracking-tight">Valor do Combo</span>
-                        <span className="text-[#39FF14] font-black text-3xl leading-none">
+                        <span className="text-gray-500 text-[9px] uppercase font-bold tracking-tight">Valor do Combo</span>
+                        <span className="text-[#39FF14] font-black text-2xl leading-none">
                           R$ {combo.price.toFixed(2)}
                         </span>
                       </div>

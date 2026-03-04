@@ -5,27 +5,27 @@ import React from 'react';
 const GallerySection = () => {
   const images = [
     {
-      url: 'https://images.pexels.com/photos/6224386/pexels-photo-6224386.jpeg?auto=compress&cs=tinysrgb&w=800',
+      url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTvsI7_yEQnVy9mFjq89ypBu3lwTzz5MjUUVg&s',
       title: 'Área de Trampolins',
     },
     {
-      url: 'https://images.pexels.com/photos/3671083/pexels-photo-3671083.jpeg?auto=compress&cs=tinysrgb&w=800',
+      url: 'https://midias.agazeta.com.br/2023/06/29/vila-trampolim-1792421-article.jpg',
       title: 'Piscina de Espuma',
     },
     {
-      url: 'https://images.pexels.com/photos/8612977/pexels-photo-8612977.jpeg?auto=compress&cs=tinysrgb&w=800',
+      url: 'https://www.wowpark.com.br/admin/image/informacao/962/3896lg.webp',
       title: 'Área Kids',
     },
     {
-      url: 'https://images.pexels.com/photos/6224384/pexels-photo-6224384.jpeg?auto=compress&cs=tinysrgb&w=800',
+      url: 'https://www.wowpark.com.br/admin/image/unidade/6/181md.jpg',
       title: 'Dodgeball Arena',
     },
     {
-      url: 'https://images.pexels.com/photos/3671086/pexels-photo-3671086.jpeg?auto=compress&cs=tinysrgb&w=800',
+      url: 'https://passeioskids.com/wp-content/uploads/2025/04/sp_criancas_passeio_altitude_park_10-1-800x533-1.jpg',
       title: 'Freestyle Zone',
     },
     {
-      url: 'https://images.pexels.com/photos/8612979/pexels-photo-8612979.jpeg?auto=compress&cs=tinysrgb&w=800',
+      url: 'https://passeioskids.com/wp-content/uploads/2023/03/parques-indoor-altitude-park-passeios-kids-768x513.jpg',
       title: 'Basketball Jump',
     },
   ];

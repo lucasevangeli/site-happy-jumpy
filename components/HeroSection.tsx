@@ -37,8 +37,9 @@ const HeroSection = () => {
         >
           Seu navegador não suporta o elemento de vídeo.
         </video>
-        {/* Overlay escuro para melhorar a legibilidade do texto */}
+        {/* Overlay escuro para melhorar a legibilidade do text e degradê inferior para integrar com a próxima seção */}
         <div className="absolute inset-0 bg-black/60"></div>
+        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black to-transparent z-10"></div>
       </div>
 
       {/* Conteúdo centralizado */}
