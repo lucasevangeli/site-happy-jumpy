@@ -88,7 +88,7 @@ export const TicketDrawer: React.FC<TicketDrawerProps> = ({ isOpen, onOpenChange
     if (ticket.expiresAt && new Date(ticket.expiresAt) < new Date()) {
       return { text: 'EXPIRADO', pillClass: 'bg-yellow-900 text-yellow-300', borderClass: 'border-yellow-500/30' };
     }
-    return { text: 'VÁLIDO', pillClass: 'bg-green-900 text-green-300', borderClass: 'border-green-500/30' };
+    return { text: 'VÁLIDO', pillClass: 'bg-transparent text-[#39ff14] border border-[#39ff14]', borderClass: 'border-[#39ff14]/30' };
   };
 
   const renderContent = () => {

@@ -44,8 +44,8 @@ export async function POST(request: Request) {
     }
 
     // 3. Salvar os dados iniciais no Firestore (banco 'happy')
-    const firestore = getFirestore('happy');
-    const userDocRef = firestore.collection('users').doc(uid);
+    const db = getFirestore(admin.app(), 'happy');
+    const userDocRef = db.collection('users').doc(uid);
 
     const userProfileData = {
       email,

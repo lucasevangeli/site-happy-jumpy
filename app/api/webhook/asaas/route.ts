@@ -27,7 +27,7 @@ export async function POST(request: Request) {
       console.log(`Recebido webhook para pagamento Asaas ID: ${asaasPaymentId} com status: ${asaasStatus}`);
 
       // 3. Encontrar o pagamento correspondente no Firebase Firestore
-      const firestore = getFirestore('happy');
+      const firestore = getFirestore(admin.app(), 'happy');
       const paymentsRef = firestore.collection('payments');
 
       const snapshot = await paymentsRef.where('asaasPaymentId', '==', asaasPaymentId).limit(1).get();

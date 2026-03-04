@@ -96,7 +96,7 @@ export async function POST(request: Request) {
         }
 
         // ETAPA 2: Salvar o estado inicial do pagamento no Firebase Firestore
-        const firestore = getFirestore('happy');
+        const firestore = getFirestore(admin.app(), 'happy');
         const paymentDocRef = firestore.collection('payments').doc();
 
         await paymentDocRef.set({

@@ -21,8 +21,8 @@ export async function POST(request: Request) {
     });
 
     // Cria um registro inicial para o usuário no Firestore (banco 'happy')
-    const firestore = getFirestore('happy');
-    const userDocRef = firestore.collection('users').doc(userRecord.uid);
+    const db = getFirestore(admin.app(), 'happy');
+    const userDocRef = db.collection('users').doc(userRecord.uid);
     await userDocRef.set({
       email: userRecord.email,
       uid: userRecord.uid,
