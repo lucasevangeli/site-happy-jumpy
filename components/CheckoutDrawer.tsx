@@ -225,16 +225,20 @@ export function CheckoutDrawer({ isOpen, onOpenChange, cart, totalValue }: Check
 
   const renderSelection = () => (
     <Tabs defaultValue="pix" className="w-full">
-      <TabsList className="grid w-full grid-cols-2">
-        <TabsTrigger value="pix">PIX</TabsTrigger>
-        <TabsTrigger value="card">Cartão de Crédito</TabsTrigger>
+      <TabsList className="grid w-full grid-cols-2 bg-[#1a1a1a] border border-gray-800 p-1 rounded-xl h-auto">
+        <TabsTrigger value="pix" className="py-2.5 rounded-lg data-[state=active]:bg-[#39ff14] data-[state=active]:text-black data-[state=active]:font-bold text-gray-400 hover:text-white transition-all">
+          PIX
+        </TabsTrigger>
+        <TabsTrigger value="card" className="py-2.5 rounded-lg data-[state=active]:bg-[#39ff14] data-[state=active]:text-black data-[state=active]:font-bold text-gray-400 hover:text-white transition-all">
+          Cartão de Crédito
+        </TabsTrigger>
       </TabsList>
       <TabsContent value="pix">
         <div className="py-4 text-center">
           <p className="text-sm text-neutral-400 mb-4">
             Clique no botão abaixo para gerar um QR Code PIX. O código será válido por 1 hora.
           </p>
-          <Button onClick={handlePixPayment} disabled={isLoading} className="w-full bg-neon-green text-black hover:bg-neon-green/90 font-bold">
+          <Button onClick={handlePixPayment} disabled={isLoading} className="w-full bg-[#39ff14] text-black hover:bg-[#39ff14]/90 font-bold hover:drop-shadow-[0_0_8px_#39ff14] transition-all">
             {isLoading ? 'Gerando...' : 'Gerar PIX'}
           </Button>
         </div>
@@ -250,8 +254,8 @@ export function CheckoutDrawer({ isOpen, onOpenChange, cart, totalValue }: Check
                     key={card.id}
                     onClick={() => setSelectedCardId(card.id)}
                     className={`flex items-center justify-between p-4 rounded-xl border transition-all ${selectedCardId === card.id
-                        ? 'border-neon-green bg-neon-green/10'
-                        : 'border-neutral-800 bg-neutral-900/50 hover:border-neutral-700'
+                      ? 'border-neon-green bg-neon-green/10'
+                      : 'border-neutral-800 bg-neutral-900/50 hover:border-neutral-700'
                       }`}
                   >
                     <div className="flex items-center gap-3">
@@ -268,8 +272,8 @@ export function CheckoutDrawer({ isOpen, onOpenChange, cart, totalValue }: Check
                 <button
                   onClick={() => setSelectedCardId('new')}
                   className={`flex items-center gap-3 p-4 rounded-xl border transition-all ${selectedCardId === 'new'
-                      ? 'border-neon-green bg-neon-green/10'
-                      : 'border-neutral-800 bg-neutral-900/50 hover:border-neutral-700'
+                    ? 'border-neon-green bg-neon-green/10'
+                    : 'border-neutral-800 bg-neutral-900/50 hover:border-neutral-700'
                     }`}
                 >
                   <Plus className={`w-5 h-5 ${selectedCardId === 'new' ? 'text-neon-green' : 'text-neutral-500'}`} />
@@ -299,7 +303,7 @@ export function CheckoutDrawer({ isOpen, onOpenChange, cart, totalValue }: Check
                   <Input id="cardCcv" value={cardCcv} onChange={e => setCardCcv(e.target.value)} placeholder="123" required />
                 </div>
               </div>
-              <Button type="submit" disabled={isLoading} className="w-full bg-neon-green text-black hover:bg-neon-green/90 font-bold mt-2">
+              <Button type="submit" disabled={isLoading} className="w-full bg-[#39ff14] text-black hover:bg-[#39ff14]/90 font-bold mt-4 hover:drop-shadow-[0_0_8px_#39ff14] transition-all">
                 {isLoading ? 'Processando...' : `Pagar R$ ${totalValue.toFixed(2)}`}
               </Button>
             </form>

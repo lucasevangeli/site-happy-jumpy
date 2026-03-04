@@ -9,11 +9,12 @@ const config: Config = {
     './app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
-                extend: {
-                fontFamily: {
-                  zain: ['Zain', ...fontFamily.sans],
-                },
-                backgroundImage: {        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+    extend: {
+      fontFamily: {
+        zain: ['Zain', ...fontFamily.sans],
+      },
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'gradient-conic':
           'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
       },
@@ -25,6 +26,20 @@ const config: Config = {
       },
       colors: {
         'neon-green': '#39ff14',
+        green: {
+          50: '#39ff14',
+          100: '#39ff14',
+          200: '#39ff14',
+          300: '#39ff14',
+          400: '#39ff14',
+          500: '#39ff14',
+          600: '#39ff14',
+          700: '#39ff14',
+          800: '#39ff14',
+          900: '#39ff14',
+          950: '#39ff14',
+          DEFAULT: '#39ff14',
+        },
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         card: {
