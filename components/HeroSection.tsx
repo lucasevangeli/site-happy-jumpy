@@ -1,12 +1,40 @@
 "use client";
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Volume2, VolumeX } from 'lucide-react';
+import { ref, getDownloadURL } from 'firebase/storage';
+import { storage } from '@/lib/firebase';
 
 const HeroSection = () => {
   const [isMuted, setIsMuted] = useState(true);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const fetchVideoUrl = async () => {
+      try {
+        const videoRefStorage = ref(storage, 'videoapresentacao/HAPPY - VIDEO SITE HORIZONTAL.mp4');
+        const url = await getDownloadURL(videoRefStorage);
+        setVideoUrl(url);
+      } catch (error) {
+        console.error('Erro ao buscar vídeo do Firebase Storage:', error);
+        // Fallback para o link anterior caso falhe
+        setVideoUrl("https://firebasestorage.googleapis.com/v0/b/happy-jumpy.firebasestorage.app/o/videoapresentacao%2FComercial%20Vila%20Trampolim.mp4?alt=media&token=a54e7b7e-4659-4f08-832c-e57415efc981");
+      }
+    };
+
+    fetchVideoUrl();
+  }, []);
+
+  // Forçar o play assim que o URL estiver pronto e o componente montado
+  useEffect(() => {
+    if (videoUrl && videoRef.current) {
+      videoRef.current.play().catch(error => {
+        console.log("Autoplay bloqueado pelo navegador, aguardando interação ou garantindo mute:", error);
+      });
+    }
+  }, [videoUrl]);
 
   const scrollToPulseiras = () => {
     const element = document.querySelector('#pulseiras');
@@ -26,17 +54,21 @@ const HeroSection = () => {
     <section id="inicio" className="relative h-screen w-full overflow-hidden">
       {/* Video de fundo */}
       <div className="absolute inset-0 z-0">
-        <video
-          ref={videoRef}
-          autoPlay
-          loop
-          muted // Inicia mudo, mas pode ser alterado
-          playsInline
-          className="w-full h-full object-cover"
-          src="https://firebasestorage.googleapis.com/v0/b/happy-jumpy.firebasestorage.app/o/videoapresentacao%2FComercial%20Vila%20Trampolim.mp4?alt=media&token=a54e7b7e-4659-4f08-832c-e57415efc981"
-        >
-          Seu navegador não suporta o elemento de vídeo.
-        </video>
+        {videoUrl && (
+          <video
+            ref={videoRef}
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="auto"
+            className="w-full h-full object-cover transition-opacity duration-1000"
+            src={videoUrl}
+            style={{ opacity: videoUrl ? 1 : 0 }}
+          >
+            Seu navegador não suporta o elemento de vídeo.
+          </video>
+        )}
         {/* Overlay escuro para melhorar a legibilidade do text e degradê inferior para integrar com a próxima seção */}
         <div className="absolute inset-0 bg-black/60"></div>
         <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black to-transparent z-10"></div>
@@ -53,10 +85,20 @@ const HeroSection = () => {
             </div>
 
             <h1 className="text-5xl md:text-7xl font-extrabold leading-tight">
-              <span className="text-white">Bem-vindo à</span>
+              <span className="text-white">Bem-vindo ao</span>
               <br />
-              <span className="text-green-400 drop-shadow-md drop-shadow-green-400">
-                Happy Jumpy
+              <span className="drop-shadow-md">
+                <span className="text-[#CB2185]">H</span>
+                <span className="text-[#DC822F]">a</span>
+                <span className="text-[#C4D648]">p</span>
+                <span className="text-[#E60A7E]">p</span>
+                <span className="text-[#00D4FF]">y</span>
+                <span className="text-white"> </span>
+                <span className="text-[#FFFF00]">J</span>
+                <span className="text-[#CB2185]">u</span>
+                <span className="text-[#DC822F]">m</span>
+                <span className="text-[#C4D648]">p</span>
+                <span className="text-[#E60A7E]">y</span>
               </span>
             </h1>
 
@@ -68,18 +110,17 @@ const HeroSection = () => {
             <div className="flex flex-wrap gap-4 items-center">
               <Button
                 onClick={scrollToPulseiras}
-                variant="neonGreen"
-                className="rounded-full font-extrabold px-8 py-6 text-lg group"
+                className="rounded-full font-extrabold px-8 py-6 text-lg group bg-transparent border-2 border-[#C8D40B] text-[#C8D40B] hover:bg-[#C8D40B] hover:text-black hover:drop-shadow-[0_0_15px_#C8D40B] transition-all duration-300"
               >
-                Comprar Pulseiras
+                Comprar Ingressos
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
 
               <Button
                 onClick={toggleSound}
-                variant="outline"
+                variant="ghost"
                 size="icon"
-                className="rounded-full border-2 border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white"
+                className="rounded-full border-2 border-[#CB2185] text-[#CB2185] !bg-transparent hover:bg-[#CB2185] hover:text-white transition-all duration-300"
               >
                 {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
               </Button>

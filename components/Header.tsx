@@ -46,12 +46,12 @@ const Header = () => {
   };
 
   const menuItems = [
-    { label: 'Início', href: '#inicio' },
-    { label: 'Sobre', href: '#sobre' },
-    { label: 'Pulseiras', href: '#pulseiras' },
-    { label: 'Combos', href: '#combos' },
-    { label: 'Galeria', href: '#galeria' },
-    { label: 'Contato', href: '#contato' },
+    { label: 'Início', href: '#inicio', color: '#CB2185' },
+    { label: 'Sobre', href: '#sobre', color: '#DC822F' },
+    { label: 'Pulseiras', href: '#pulseiras', color: '#C4D648' },
+    { label: 'Combos', href: '#combos', color: '#E60A7E' },
+    { label: 'Galeria', href: '#galeria', color: '#00D4FF' },
+    { label: 'Contato', href: '#contato', color: '#FFFF00' },
   ];
 
   const scrollToSection = (href: string) => {
@@ -66,19 +66,19 @@ const Header = () => {
     <>
       <header className="fixed top-0 left-0 right-0 z-50">
         {/* DIV DE CONTATO */}
-        <div className="hidden md:block text-gray-300 text-sm py-3 px-10"> {/* Removido bg-black */}
+        <div className="hidden md:block text-sm py-3 px-10"> {/* Removido text-gray-300 */}
           <div className="container mx-auto max-w-7xl flex justify-between items-center px-10">
             <div className="flex items-center space-x-4">
-              <span className="flex items-center space-x-1 font-bold text-white">
+              <span className="flex items-center space-x-1 font-bold text-[#DC822F]">
                 <Phone className="h-4 w-4" /> {/* Ícone de telefone */}
                 <span>(99) 99999-9999</span>
               </span>
-              <span className="flex items-center space-x-1 font-bold text-white">
+              <span className="flex items-center space-x-1 font-bold text-[#00D4FF]">
                 <Mail className="h-4 w-4" /> {/* Ícone de email */}
                 <span>contato@happyjumpy.com</span>
               </span>
             </div>
-            <div className="flex items-center space-x-1 font-bold text-white">
+            <div className="flex items-center space-x-1 font-bold text-[#C4D648]">
               <MapPin className="h-4 w-4" /> {/* Ícone de localização */}
               <span>Rua Exemplo, 123 - São Paulo, SP</span> {/* Removido "Endereço:" para ficar mais limpo com o ícone */}
             </div>
@@ -87,7 +87,7 @@ const Header = () => {
         {/* DIV DO MENU PRINCIPAL */}
         <div className="px-4 py-2">
           <div className="container mx-auto max-w-7xl">
-            <div className={`bg-black/90 backdrop-blur-md border border-purple-500/30 px-8 py-5 ${isMenuOpen ? 'rounded-none shadow-none' : 'rounded-full shadow-2xl shadow-purple-500/20'} md:rounded-full md:shadow-2xl md:shadow-purple-500/20`}>
+            <div className={`bg-transparent backdrop-blur-md border-2 border-[#602BAF] px-8 py-5 ${isMenuOpen ? 'rounded-none shadow-none' : 'rounded-full shadow-2xl shadow-purple-500/20'} md:rounded-full md:shadow-2xl md:shadow-purple-500/20`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <img src="/HappyJump-46.png" alt="Happy Jumpy Logo" className="h-12" />
@@ -98,8 +98,9 @@ const Header = () => {
                     <button
                       key={item.label}
                       onClick={() => scrollToSection(item.href)}
-                      className="relative text-gray-300 hover:text-green-400 transition-colors duration-300 font-zain font-bold 
-                                             after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-green-400
+                      style={{ '--hover-color': item.color } as React.CSSProperties}
+                      className="relative text-gray-300 hover:text-[var(--hover-color)] transition-colors duration-300 font-zain font-bold 
+                                             after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-[var(--hover-color)]
                                              after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300
                                              hover:scale-[1.05] hover:-translate-y-1 transition-transform duration-200 ease-in-out"
                     >
@@ -111,10 +112,10 @@ const Header = () => {
                 <div className="flex items-center space-x-4">
                   <div
                     onClick={openCart}
-                    className="relative flex items-center justify-center p-2 rounded-md cursor-pointer group hover:drop-shadow-[0_0_8px_#39ff14] transition-all duration-300"
+                    className="relative flex items-center justify-center p-2 rounded-md cursor-pointer group hover:drop-shadow-[0_0_8px_#39FF14] transition-all duration-300"
                     aria-label="Abrir carrinho"
                   >
-                    <ShoppingCart className="w-5 h-5 text-green-400 group-hover:text-[#39ff14] transition-colors duration-200" />
+                    <ShoppingCart className="w-5 h-5 text-[#39FF14] group-hover:brightness-125 transition-colors duration-200" />
                     {getTotalItems() > 0 && (
                       <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center font-bold border-4 border-black">
                         {getTotalItems()}
@@ -126,18 +127,18 @@ const Header = () => {
                   {user && (
                     <div
                       onClick={openTicketDrawer}
-                      className="relative flex items-center justify-center p-2 rounded-md cursor-pointer group hover:drop-shadow-[0_0_8px_#39ff14] transition-all duration-300"
+                      className="relative flex items-center justify-center p-2 rounded-md cursor-pointer group hover:drop-shadow-[0_0_8px_#FF6B00] transition-all duration-300"
                       aria-label="Meus Ingressos"
                     >
-                      <Ticket className="w-5 h-5 text-green-400 group-hover:text-[#39ff14] transition-colors duration-200" />
+                      <Ticket className="w-5 h-5 text-[#FF6B00] group-hover:brightness-125 transition-colors duration-200" />
                     </div>
                   )}
 
                   <div className="hidden md:block">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="relative bg-transparent hover:bg-transparent p-0 group hover:drop-shadow-[0_0_8px_#39ff14] transition-all duration-300">
-                          <User className="h-5 w-5 text-green-400 group-hover:text-[#39ff14] transition-colors duration-200" />
+                        <Button variant="ghost" size="icon" className="relative bg-transparent hover:bg-transparent p-0 group hover:drop-shadow-[0_0_8px_#8A2BE2] transition-all duration-300">
+                          <User className="h-5 w-5 text-[#8A2BE2] group-hover:brightness-125 transition-colors duration-200" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
@@ -164,7 +165,7 @@ const Header = () => {
                     className="md:hidden bg-transparent hover:bg-transparent p-0"
                     size="icon"
                   >
-                    {isMenuOpen ? <X className="w-5 h-5 text-green-400 hover:text-green-300 transition-colors duration-200" /> : <Menu className="w-5 h-5 text-green-400 hover:text-green-300 transition-colors duration-200" />}
+                    {isMenuOpen ? <X className="w-5 h-5 text-[#FF007F] hover:brightness-125 transition-colors duration-200" /> : <Menu className="w-5 h-5 text-[#FF007F] hover:brightness-125 transition-colors duration-200" />}
                   </Button>
                 </div>
               </div>
