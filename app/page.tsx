@@ -7,6 +7,8 @@ import ProductsSection from '@/components/ProductsSection';
 import CombosSection from '@/components/CombosSection';
 import GallerySection from '@/components/GallerySection';
 import ContactSection from '@/components/ContactSection';
+import AttractionsSection from '@/components/AttractionsSection';
+import BirthdayBanner from '@/components/BirthdayBanner';
 
 export default function Home() {
   return (
@@ -14,6 +16,8 @@ export default function Home() {
       <Header />
       <HeroSection />
       <AboutSection />
+      <AttractionsSection />
+      <BirthdayBanner />
       <ProductsSection />
       <CombosSection />
       <GallerySection />

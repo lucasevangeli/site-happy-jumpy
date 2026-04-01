@@ -99,7 +99,7 @@ const ProductsSection = () => {
   );
 
   return (
-    <section id="pulseiras" className="py-24 bg-gradient-to-b from-black via-purple-950/20 to-black relative overflow-hidden">
+    <section id="produtos" className="py-24 relative overflow-hidden">
       <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-10" />
 
       <div className="container mx-auto px-4 max-w-7xl relative z-10">
@@ -109,12 +109,12 @@ const ProductsSection = () => {
               Nossos Planos
             </span>
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+          <h2 className="text-4xl md:text-5xl font-bold mb-4 font-titan">
             <span className="bg-gradient-to-r from-green-400 to-purple-600 bg-clip-text text-transparent">
-              Escolha Sua Pulseira
+              Garanta Seu Ticket
             </span>
           </h2>
-          <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-400 max-w-2xl mx-auto font-fredoka">
             Todos os planos incluem acesso completo às nossas atrações. Escolha o tempo perfeito para sua diversão!
           </p>
         </div>
@@ -146,8 +146,8 @@ const ProductsSection = () => {
                       </div>
                     )}
                     {/* Category Badge - Neon Green */}
-                    <div className="absolute top-4 left-4 bg-[#39FF14] px-3 py-1 rounded text-[10px] font-black text-black uppercase tracking-widest z-10 shadow-lg">
-                      Pulseira
+                    <div className="absolute top-4 left-4 bg-[#39FF14] px-3 py-1 rounded text-[10px] font-black text-black uppercase tracking-widest z-10 shadow-lg font-fredoka">
+                      Ticket
                     </div>
 
                     {/* Gradient Overlay */}
@@ -202,6 +202,15 @@ const ProductsSection = () => {
               ))}
             </div>
           )}
+          
+          <div className="flex justify-center mt-12">
+            <a 
+              href="/tickets" 
+              className="px-10 py-4 bg-white text-black font-fredoka font-black rounded-full hover:scale-105 transition-transform shadow-[0_0_20px_rgba(255,255,255,0.2)]"
+            >
+              Ver Todos os Ingressos
+            </a>
+          </div>
         </div>
 
         <div className="bg-gradient-to-r from-green-500/10 to-purple-500/10 border border-green-500/30 rounded-2xl p-8 text-center">

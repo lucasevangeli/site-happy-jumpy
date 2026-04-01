@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Force re-render of styles */
+
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
@@ -76,10 +78,21 @@
   * {
     @apply border-border;
   }
-  body {
-    @apply bg-background text-foreground;
-    font-family: 'Zain', sans-serif;
+  
+  html {
+    background-color: #000000;
   }
+
+  body {
+    background: transparent !important;
+    @apply text-foreground;
+    font-family: 'Fredoka', sans-serif;
+  }
+
+  h1, h2 {
+    font-family: 'Titan One', cursive;
+  }
+
   html {
     scroll-behavior: smooth;
     overflow-x: hidden;

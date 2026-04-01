@@ -11,7 +11,9 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        zain: ['Zain', ...fontFamily.sans],
+        sans: ['Fredoka', ...fontFamily.sans],
+        titan: ['Titan One', ...fontFamily.serif],
+        fredoka: ['Fredoka', ...fontFamily.sans],
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',

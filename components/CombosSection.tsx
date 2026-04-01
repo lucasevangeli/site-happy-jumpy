@@ -114,7 +114,7 @@ const CombosSection = () => {
   );
 
   return (
-    <section id="combos" className="py-24 bg-black relative overflow-hidden">
+    <section id="contato" className="py-24 relative overflow-hidden">
       <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-5" />
 
       <div className="container mx-auto px-4 max-w-7xl relative z-10">

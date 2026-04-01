@@ -4,6 +4,7 @@ import { UIProvider } from '@/contexts/UIContext';
 import { CartProvider } from '@/contexts/CartContext';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { Toaster } from '@/components/ui/sonner';
+import DynamicBackground from '@/components/DynamicBackground';
 
 export const metadata: Metadata = {
 //... (metadata content remains the same)
@@ -21,9 +22,10 @@ export default function RootLayout({
         <meta name="theme-color" content="#000000" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Zain:wght@200;300;400;700;800;900&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&family=Titan+One&display=swap" rel="stylesheet" />
       </head>
       <body>
+        <DynamicBackground />
         <UIProvider> {/* Envolver com UIProvider */}
           <CartProvider>
             <AuthProvider>

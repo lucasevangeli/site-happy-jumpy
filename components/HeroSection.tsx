@@ -3,24 +3,37 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Volume2, VolumeX } from 'lucide-react';
+import dynamic from 'next/dynamic';
+
+const FoamPit = dynamic(() => import('./FoamPit'), {
+  ssr: false,
+  loading: () => <div className="w-full h-full" />
+});
 import { ref, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/lib/firebase';
 
 const HeroSection = () => {
   const [isMuted, setIsMuted] = useState(true);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [isVideoLoaded, setIsVideoLoaded] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
+    const mobileCheck = typeof window !== 'undefined' && window.innerWidth < 1024;
+    setIsMobile(mobileCheck);
+
     const fetchVideoUrl = async () => {
       try {
-        const videoRefStorage = ref(storage, 'videoapresentacao/HAPPY - VIDEO SITE HORIZONTAL.mp4');
+        const videoPath = mobileCheck 
+          ? 'videoapresentacao/video menor resolucao .mp4' 
+          : 'videoapresentacao/HAPPY - VIDEO SITE HORIZONTAL.mp4';
+          
+        const videoRefStorage = ref(storage, videoPath);
         const url = await getDownloadURL(videoRefStorage);
         setVideoUrl(url);
       } catch (error) {
-        console.error('Erro ao buscar vídeo do Firebase Storage:', error);
-        // Fallback para o link anterior caso falhe
-        setVideoUrl("https://firebasestorage.googleapis.com/v0/b/happy-jumpy.firebasestorage.app/o/videoapresentacao%2FComercial%20Vila%20Trampolim.mp4?alt=media&token=a54e7b7e-4659-4f08-832c-e57415efc981");
+        setVideoUrl("https://firebasestorage.googleapis.com/v0/b/happy-jumpy.firebasestorage.app/o/videoapresentacao%2FHAPPY%20-%20VIDEO%20SITE%20-%20HORIZONTAL%20(V1).mp4?alt=media");
       }
     };
 
@@ -31,8 +44,11 @@ const HeroSection = () => {
   useEffect(() => {
     if (videoUrl && videoRef.current) {
       videoRef.current.play().catch(error => {
-        console.log("Autoplay bloqueado pelo navegador, aguardando interação ou garantindo mute:", error);
+        console.log("Autoplay bloqueado pelo navegador, aguardando interação:", error);
       });
+      // Fail-safe: Se o vídeo não disparar onLoadedData, marcamos como carregado em 2s
+      const timer = setTimeout(() => setIsVideoLoaded(true), 2000);
+      return () => clearTimeout(timer);
     }
   }, [videoUrl]);
 
@@ -51,31 +67,33 @@ const HeroSection = () => {
   };
 
   return (
-    <section id="inicio" className="relative h-screen w-full overflow-hidden">
+    <section id="inicio" className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Video de fundo */}
       <div className="absolute inset-0 z-0">
         {videoUrl && (
           <video
+            key={videoUrl}
             ref={videoRef}
             autoPlay
             loop
             muted
             playsInline
-            preload="auto"
-            className="w-full h-full object-cover transition-opacity duration-1000"
+            onLoadedData={() => setIsVideoLoaded(true)}
+            poster="https://firebasestorage.googleapis.com/v0/b/happy-jumpy.firebasestorage.app/o/logo%2Flogo-happy-jumpy.png?alt=media"
+            preload="metadata"
+            className="w-full h-full object-cover opacity-100 transition-opacity duration-1000"
             src={videoUrl}
-            style={{ opacity: videoUrl ? 1 : 0 }}
           >
             Seu navegador não suporta o elemento de vídeo.
           </video>
         )}
-        {/* Overlay escuro para melhorar a legibilidade do text e degradê inferior para integrar com a próxima seção */}
+        {/* Overlay escuro */}
         <div className="absolute inset-0 bg-black/60"></div>
         <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black to-transparent z-10"></div>
       </div>
 
-      {/* Conteúdo centralizado */}
-      <div className="relative z-10 h-full flex flex-col justify-center">
+      {/* Conteúdo centralizado - Elevado para z-30 para ficar acima da FoamPit */}
+      <div className="relative z-30 h-full flex flex-col justify-center">
         <div className="container mx-auto px-4 max-w-7xl text-left">
           <div className="space-y-8">
             <div className="inline-block">
@@ -129,8 +147,13 @@ const HeroSection = () => {
         </div>
       </div>
 
-      {/* Indicador de rolagem */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 animate-bounce">
+      {/* Piscina de Espuma Interativa - Reabilitada no Mobile para Teste */}
+      <div className="absolute inset-0 z-20 pointer-events-none">
+        <FoamPit />
+      </div>
+
+      {/* Indicador de rolagem - Elevado para z-40 */}
+      <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 z-40 animate-bounce cursor-pointer" onClick={scrollToPulseiras}>
         <div className="w-8 h-12 border-2 border-green-400 rounded-full flex items-start justify-center p-2">
           <div className="w-1.5 h-3 bg-green-400 rounded-full" />
         </div>

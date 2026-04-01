@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from 'react';
-import { ShoppingCart, Menu, X, User, Phone, Mail, MapPin, Ticket } from 'lucide-react'; // Adicionado Ticket
+import { ShoppingCart, Menu, X, User, Phone, Mail, MapPin, Ticket, ChevronDown } from 'lucide-react'; 
+import { useRouter, usePathname } from 'next/navigation';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { auth } from '@/lib/firebase';
@@ -23,6 +24,8 @@ import {
 import { toast } from "sonner";
 
 
+import Image from 'next/image';
+
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { cart, getTotalItems, getTotalPrice } = useCart();
@@ -33,7 +36,10 @@ const Header = () => {
     openAuth,
     isTicketDrawerOpen, openTicketDrawer, closeTicketDrawer // Adicionado
   } = useUI();
-  const { user } = useAuth(); // Pega o usuário do contexto de autenticação
+  const { user } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
+  const isHome = pathname === '/';
 
   const handleLogout = async () => {
     try {
@@ -46,13 +52,40 @@ const Header = () => {
   };
 
   const menuItems = [
-    { label: 'Início', href: '#inicio', color: '#CB2185' },
-    { label: 'Sobre', href: '#sobre', color: '#DC822F' },
-    { label: 'Pulseiras', href: '#pulseiras', color: '#C4D648' },
-    { label: 'Combos', href: '#combos', color: '#E60A7E' },
-    { label: 'Galeria', href: '#galeria', color: '#00D4FF' },
-    { label: 'Contato', href: '#contato', color: '#FFFF00' },
+    { label: 'Início', href: '/', isAnchor: true, color: '#CB2185' },
+    { 
+      label: 'O Parque', 
+      href: '/parque', 
+      color: '#DC822F',
+      children: [
+        { label: 'Sobre Nós', href: '/sobre-nos' },
+        { label: 'Atrações', href: '/atracoes' },
+        { label: 'Regras', href: '/regras' },
+        { label: 'Dúvidas', href: '/duvidas' },
+      ]
+    },
+    { label: 'Tickets', href: '/tickets', isAnchor: false, color: '#C4D648' },
+    { label: 'Combos', href: '#combos', isAnchor: true, color: '#E60A7E' },
+    { label: 'Galeria', href: '#galeria', isAnchor: true, color: '#00D4FF' },
+    { label: 'Contato', href: '#contato', isAnchor: true, color: '#FFFF00' },
   ];
+
+  const navigateTo = (href: string, isAnchor?: boolean) => {
+    if (isAnchor) {
+      if (isHome) {
+        if (href === '/') {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          scrollToSection(href);
+        }
+      } else {
+        router.push('/' + (href === '/' ? '' : href));
+      }
+    } else {
+      router.push(href);
+      setIsMenuOpen(false);
+    }
+  };
 
   const scrollToSection = (href: string) => {
     const element = document.querySelector(href);
@@ -90,22 +123,49 @@ const Header = () => {
             <div className={`bg-transparent backdrop-blur-md border-2 border-[#602BAF] px-8 py-5 ${isMenuOpen ? 'rounded-none shadow-none' : 'rounded-full shadow-2xl shadow-purple-500/20'} md:rounded-full md:shadow-2xl md:shadow-purple-500/20`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <img src="/HappyJump-46.png" alt="Happy Jumpy Logo" className="h-12" />
+                  <Image 
+                    src="/HappyJump-46.png" 
+                    alt="Happy Jumpy Logo" 
+                    width={180}
+                    height={60}
+                    priority
+                    className="h-12 w-auto object-contain"
+                  />
                 </div>
 
                 <nav className="hidden md:flex items-center space-x-8">
                   {menuItems.map((item) => (
-                    <button
-                      key={item.label}
-                      onClick={() => scrollToSection(item.href)}
-                      style={{ '--hover-color': item.color } as React.CSSProperties}
-                      className="relative text-gray-300 hover:text-[var(--hover-color)] transition-colors duration-300 font-zain font-bold 
-                                             after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-[var(--hover-color)]
-                                             after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300
-                                             hover:scale-[1.05] hover:-translate-y-1 transition-transform duration-200 ease-in-out"
-                    >
-                      {item.label}
-                    </button>
+                    item.children ? (
+                      <DropdownMenu key={item.label}>
+                        <DropdownMenuTrigger className="flex items-center space-x-1 text-gray-300 hover:text-[#DC822F] transition-colors duration-300 font-fredoka font-bold focus:outline-none group">
+                          <span>{item.label}</span>
+                          <ChevronDown className="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="bg-black/90 border-[#602BAF] backdrop-blur-md">
+                          {item.children.map((child) => (
+                            <DropdownMenuItem 
+                              key={child.label}
+                              onClick={() => navigateTo(child.href)}
+                              className="text-gray-300 focus:text-[#DC822F] focus:bg-purple-500/10 cursor-pointer font-fredoka font-medium py-3 px-6"
+                            >
+                              {child.label}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    ) : (
+                      <button
+                        key={item.label}
+                        onClick={() => navigateTo(item.href, item.isAnchor)}
+                        style={{ '--hover-color': item.color } as React.CSSProperties}
+                        className="relative text-gray-300 hover:text-[var(--hover-color)] transition-colors duration-300 font-fredoka font-bold 
+                                               after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[4px] after:bg-[var(--hover-color)]
+                                               after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300
+                                               hover:scale-[1.05] hover:-translate-y-1 transition-transform duration-200 ease-in-out"
+                      >
+                        {item.label}
+                      </button>
+                    )
                   ))}
                 </nav>
 
@@ -173,16 +233,34 @@ const Header = () => {
               {isMenuOpen && (
                 <nav className="md:hidden mt-4 pt-4 border-t border-purple-500/30 flex flex-col space-y-3">
                   {menuItems.map((item) => (
-                    <button
-                      key={item.label}
-                      onClick={() => scrollToSection(item.href)}
-                      className="relative text-gray-300 hover:text-green-400 transition-colors duration-300 font-zain font-bold text-left
-                                             after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-green-400
-                                             after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300
-                                             hover:scale-[1.05] hover:-translate-y-1 transition-transform duration-200 ease-in-out"
-                    >
-                      {item.label}
-                    </button>
+                    <div key={item.label} className="flex flex-col space-y-2">
+                      {item.children ? (
+                        <>
+                          <span className="text-gray-500 text-xs font-bold uppercase tracking-wider px-2 pt-2">
+                            {item.label}
+                          </span>
+                          {item.children.map((child) => (
+                            <button
+                              key={child.label}
+                              onClick={() => navigateTo(child.href)}
+                              className="relative text-gray-300 hover:text-green-400 transition-colors duration-300 font-fredoka font-bold text-left px-4 py-2"
+                            >
+                              {child.label}
+                            </button>
+                          ))}
+                        </>
+                      ) : (
+                        <button
+                          onClick={() => navigateTo(item.href, item.isAnchor)}
+                          className="relative text-gray-300 hover:text-green-400 transition-colors duration-300 font-fredoka font-bold text-left
+                                                 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-green-400
+                                                 after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300
+                                                 hover:scale-[1.05] hover:-translate-y-1 transition-transform duration-200 ease-in-out"
+                        >
+                          {item.label}
+                        </button>
+                      )}
+                    </div>
                   ))}
 
                   <div className="border-t border-purple-500/30 mt-4 pt-4">
@@ -215,7 +293,7 @@ const Header = () => {
                           handleLogout();
                           setIsMenuOpen(false); // Fecha o menu hambúrguer após o logout
                         }}
-                        className="relative text-red-400 hover:text-red-300 transition-colors duration-300 font-zain font-bold text-left
+                        className="relative text-red-400 hover:text-red-300 transition-colors duration-300 font-fredoka font-normal text-left
                                              after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-red-400
                                              after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300
                                              hover:scale-[1.05] hover:-translate-y-1 transition-transform duration-200 ease-in-out"
@@ -231,7 +309,7 @@ const Header = () => {
                         openAuth(); // Chama a função para abrir o AuthDrawer
                         setIsMenuOpen(false); // Fecha o menu hambúrguer
                       }}
-                      className="relative text-green-400 hover:text-green-300 transition-colors duration-300 font-zain font-bold text-left
+                      className="relative text-green-400 hover:text-green-300 transition-colors duration-300 font-fredoka font-normal text-left
                                              after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-green-400
                                              after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300
                                              hover:scale-[1.05] hover:-translate-y-1 transition-transform duration-200 ease-in-out"
