@@ -1,166 +1,143 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
-import Matter from 'matter-js';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { Physics, useBox, useSphere, usePlane } from '@react-three/cannon';
+import * as THREE from 'three';
 
 const COLORS = ['#E60A7E', '#DC822F', '#C4D648', '#00D4FF', '#FFFF00'];
 
-const FoamPit = () => {
-    const sceneRef = useRef<HTMLDivElement>(null);
-    const engineRef = useRef<Matter.Engine | null>(null);
-
-    useEffect(() => {
-        if (!sceneRef.current) return;
-
-        const { Engine, Render, Runner, Bodies, Composite, Mouse, MouseConstraint } = Matter;
-        const engine = Engine.create();
-        engineRef.current = engine;
-        const world = engine.world;
-
-        const containerWidth = sceneRef.current.clientWidth;
-        const containerHeight = sceneRef.current.clientHeight;
-        const isMobile = typeof window !== 'undefined' && window.innerWidth < 1024;
-
-        const render = Render.create({
-            element: sceneRef.current,
-            engine: engine,
-            options: {
-                width: containerWidth,
-                height: containerHeight,
-                background: 'transparent',
-                wireframes: false,
-                pixelRatio: isMobile ? 1 : window.devicePixelRatio // Performance turbo no mobile
-            }
-        });
-
-        Render.run(render);
-        const runner = Runner.create();
-        Runner.run(runner, engine);
-
-        // Ground / Walls (Invisíveis)
-        const thickness = 100;
-        const floor = Bodies.rectangle(containerWidth / 2, containerHeight + thickness / 2, containerWidth, thickness, { 
-            isStatic: true,
-            render: { visible: false }
-        });
-        const leftWall = Bodies.rectangle(-thickness / 2, containerHeight / 2, thickness, containerHeight * 2, { 
-            isStatic: true,
-            render: { visible: false }
-        });
-        const rightWall = Bodies.rectangle(containerWidth + thickness / 2, containerHeight / 2, thickness, containerHeight * 2, { 
-            isStatic: true,
-            render: { visible: false }
-        });
-
-        Composite.add(world, [floor, leftWall, rightWall]);
-
-        // Foam blocks (Tamanho Uniforme e Bordas Levemente Arredondadas)
-        const count = isMobile ? 18 : 45; // Quantidade otimizada para visual vs performance
-        const blockSize = isMobile ? 45 : 60;
-        const blocks = [];
-
-        for (let i = 0; i < count; i++) {
-            const x = Math.random() * containerWidth;
-            const y = Math.random() * -containerHeight;
-
-            const block = Bodies.rectangle(x, y, blockSize, blockSize, {
-                chamfer: { radius: 8 }, // Mais arredondado para o mobile ficar "fofo"
-                render: {
-                    fillStyle: COLORS[Math.floor(Math.random() * COLORS.length)],
-                    lineWidth: 0
-                },
-                restitution: 0.5,
-                friction: 0.1,
-                frictionAir: isMobile ? 0.07 : 0.04 
-            });
-            blocks.push(block);
-        }
-
-        Composite.add(world, [floor, leftWall, rightWall, ...blocks]);
-
-        // Repulsor "Magnético" Invisível que segue o mouse ou touch
-        const repulsor = Bodies.circle(0, 0, isMobile ? 100 : 80, {
-            isStatic: true,
-            render: { visible: false }
-        });
-        Composite.add(world, repulsor);
-
-        const updateRepulsor = (clientX: number, clientY: number) => {
-            const rect = sceneRef.current?.getBoundingClientRect();
-            if (rect) {
-                const x = clientX - rect.left;
-                const y = clientY - rect.top;
-                Matter.Body.setPosition(repulsor, { x, y });
-            }
-        };
-
-        const handleMouseMove = (e: MouseEvent) => updateRepulsor(e.clientX, e.clientY);
-        const handleTouchMove = (e: TouchEvent) => {
-            if (e.touches[0]) {
-                updateRepulsor(e.touches[0].clientX, e.touches[0].clientY);
-            }
-        };
-
-        window.addEventListener('mousemove', handleMouseMove);
-        window.addEventListener('touchstart', (e) => handleTouchMove(e));
-        window.addEventListener('touchmove', (e) => handleTouchMove(e));
-
-        // Repulsão Dinâmica (Efeito "Susto")
-        Matter.Events.on(engine, 'beforeUpdate', () => {
-            const bodies = Composite.allBodies(world);
-            for (let i = 0; i < bodies.length; i++) {
-                const body = bodies[i];
-                if (body.isStatic || body === repulsor) continue;
-
-                const dx = body.position.x - repulsor.position.x;
-                const dy = body.position.y - repulsor.position.y;
-                const distanceSq = dx * dx + dy * dy;
-                const forceRange = isMobile ? 150 : 120; // Raio de influência maior no toque
-
-                if (distanceSq < forceRange * forceRange) {
-                    const distance = Math.sqrt(distanceSq);
-                    const forceMagnitude = (forceRange - distance) * (isMobile ? 0.0006 : 0.0004);
-                    Matter.Body.applyForce(body, body.position, {
-                        x: (dx / distance) * forceMagnitude * body.mass,
-                        y: (dy / distance) * forceMagnitude * body.mass
-                    });
-                }
-            }
-        });
-
-        // Resize
-        const handleResize = () => {
-            if (!sceneRef.current) return;
-            const newWidth = sceneRef.current.clientWidth;
-            const newHeight = sceneRef.current.clientHeight;
-            render.canvas.width = newWidth;
-            render.canvas.height = newHeight;
-            render.options.width = newWidth;
-            render.options.height = newHeight;
-            Matter.Body.setPosition(floor, { x: newWidth / 2, y: newHeight + thickness / 2 });
-            Matter.Body.setPosition(rightWall, { x: newWidth + thickness / 2, y: newHeight / 2 });
-        };
-
-        window.addEventListener('resize', handleResize);
-
-        return () => {
-            window.removeEventListener('mousemove', handleMouseMove);
-            window.removeEventListener('touchstart', (e) => handleTouchMove(e as any));
-            window.removeEventListener('touchmove', (e) => handleTouchMove(e as any));
-            window.removeEventListener('resize', handleResize);
-            Render.stop(render);
-            Runner.stop(runner);
-            Engine.clear(engine);
-            render.canvas.remove();
-        };
-    }, []);
+// Individual Cube Component
+function Cube({ position, color }: { position: [number, number, number], color: string }) {
+    const [ref, api] = useBox(() => ({
+        mass: 1,
+        position,
+        args: [1, 1, 1],
+        material: { friction: 0.1, restitution: 0.2 },
+        linearDamping: 0.2,
+        angularDamping: 0.2,
+    }));
 
     return (
-        <div 
-            ref={sceneRef} 
-            className="w-full h-full relative pointer-events-none"
-            style={{ touchAction: 'none' }}
-        />
+        <mesh ref={ref as any} castShadow receiveShadow>
+            <boxGeometry args={[1, 1, 1]} />
+            <meshStandardMaterial color={color} roughness={0.4} metalness={0.1} />
+        </mesh>
+    );
+}
+
+// Mouse Repulsor Sphere (Invisible)
+function MouseRepulsor() {
+    const { viewport } = useThree();
+    const [, api] = useSphere(() => ({
+        type: 'Kinematic',
+        args: [2.5],
+        position: [0, 0, 0],
+    }));
+
+    useFrame((state) => {
+        const x = (state.mouse.x * viewport.width) / 2;
+        const y = (state.mouse.y * viewport.height) / 2;
+        // Seguindo o mouse no plano XY
+        api.position.set(x, y, 0.5);
+    });
+
+    return null;
+}
+
+// Dynamic Boundaries Based on Viewport
+function Borders() {
+    const { viewport } = useThree();
+    const h = viewport.height / 2;
+    const w = viewport.width / 2;
+
+    // Floor - Posicionado exatamente no limite inferior da viewport
+    usePlane(() => ({ 
+        rotation: [-Math.PI / 2, 0, 0], 
+        position: [0, -h, 0] 
+    }), [h]);
+
+    // Left Wall
+    usePlane(() => ({ 
+        rotation: [0, Math.PI / 2, 0], 
+        position: [-w, 0, 0] 
+    }), [w]);
+
+    // Right Wall
+    usePlane(() => ({ 
+        rotation: [0, -Math.PI / 2, 0], 
+        position: [w, 0, 0] 
+    }), [w]);
+
+    // Back (Depth limit)
+    usePlane(() => ({ 
+        rotation: [0, 0, 0], 
+        position: [0, 0, -1] 
+    }));
+
+    // Front (Forward limit - helps keep interaction focused)
+    usePlane(() => ({ 
+        rotation: [0, Math.PI, 0], 
+        position: [0, 0, 2] 
+    }));
+
+    return null;
+}
+
+const FoamPit = () => {
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 1024;
+    const cubeCount = isMobile ? 30 : 65;
+
+    // Cubos começam caindo de cima, mas se acumulam na base
+    const cubes = useMemo(() => {
+        return Array.from({ length: cubeCount }).map((_, i) => ({
+            id: i,
+            // Começam distribuídos na largura, caindo de alturas variadas
+            position: [
+                (Math.random() - 0.5) * 20, 
+                Math.random() * 15 + 5,      
+                Math.random() * 0.8         
+            ] as [number, number, number],
+            color: COLORS[Math.floor(Math.random() * COLORS.length)]
+        }));
+    }, [cubeCount]);
+
+    return (
+        <div className="w-full h-full relative pointer-events-auto overflow-hidden">
+            <Canvas
+                shadows
+                orthographic
+                camera={{ 
+                    zoom: isMobile ? 40 : 70, 
+                    position: [0, 0, 20], 
+                    near: 0.1,
+                    far: 1000 
+                }}
+                className="bg-transparent"
+                style={{ touchAction: 'none' }}
+                dpr={[1, 2]}
+            >
+                <ambientLight intensity={1.8} />
+                <directionalLight 
+                    position={[10, 25, 10]} 
+                    intensity={2} 
+                    castShadow 
+                    shadow-mapSize={[1024, 1024]}
+                />
+                <pointLight position={[-10, 10, -5]} intensity={1.2} color="#ffffff" />
+
+                <Physics 
+                    gravity={[0, -18, 0]} 
+                    defaultContactMaterial={{ friction: 0.2, restitution: 0.1 }}
+                >
+                    <Borders />
+                    <MouseRepulsor />
+                    {cubes.map((cube) => (
+                        <Cube key={cube.id} position={cube.position} color={cube.color} />
+                    ))}
+                </Physics>
+            </Canvas>
+        </div>
     );
 };
 
