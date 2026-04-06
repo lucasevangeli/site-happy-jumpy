@@ -152,21 +152,22 @@ const AttractionsSection = () => {
                                             rotateY: isNext ? -30 : isPrev ? 30 : 0
                                         }}
                                         animate={{ 
-                                            opacity: isCenter ? 1 : 0.5,
+                                            opacity: isCenter ? 1 : (typeof window !== 'undefined' && window.innerWidth < 1024 ? 0.4 : 0.6),
                                             scale: isCenter ? 1.1 : 0.8,
                                             x: isNext ? (typeof window !== 'undefined' && window.innerWidth < 768 ? 100 : 350) : isPrev ? (typeof window !== 'undefined' && window.innerWidth < 768 ? -100 : -350) : 0,
                                             rotateY: isNext ? -45 : isPrev ? 45 : 0,
                                             zIndex: isCenter ? 30 : 10,
-                                            filter: isCenter ? 'blur(0px)' : 'blur(4px)'
+                                            filter: isCenter ? 'blur(0px)' : (typeof window !== 'undefined' && window.innerWidth < 1024 ? 'none' : 'blur(4px)'),
+                                            transform: 'translateZ(0)' // Forçar GPU
                                         }}
                                         exit={{ opacity: 0, scale: 0.5 }}
                                         transition={{ 
                                             type: 'spring', 
-                                            stiffness: 300, 
-                                            damping: 30,
-                                            filter: { type: 'tween', duration: 0.2 } // Evita valores negativos de blur
+                                            stiffness: 350, 
+                                            damping: 35,
+                                            filter: { type: 'tween', duration: 0.1 } 
                                         }}
-                                        className="absolute cursor-pointer perspective-1000"
+                                        className="absolute cursor-pointer perspective-1000 will-change-transform"
                                         onClick={() => setActiveIndex(index)}
                                     >
                                         <div 

@@ -17,30 +17,38 @@ const HeroSection = () => {
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [isVideoLoaded, setIsVideoLoaded] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isVideoStarted, setIsVideoStarted] = useState(false);
+  const [isFetching, setIsFetching] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     const mobileCheck = typeof window !== 'undefined' && window.innerWidth < 1024;
     setIsMobile(mobileCheck);
-
-    const fetchVideoUrl = async () => {
-      try {
-        const videoPath = mobileCheck 
-          ? 'videoapresentacao/video menor resolucao .mp4' 
-          : 'videoapresentacao/HAPPY - VIDEO SITE HORIZONTAL.mp4';
-          
-        const videoRefStorage = ref(storage, videoPath);
-        const url = await getDownloadURL(videoRefStorage);
-        setVideoUrl(url);
-      } catch (error) {
-        setVideoUrl("https://firebasestorage.googleapis.com/v0/b/happy-jumpy.firebasestorage.app/o/videoapresentacao%2FHAPPY%20-%20VIDEO%20SITE%20-%20HORIZONTAL%20(V1).mp4?alt=media");
-      }
-    };
-
-    fetchVideoUrl();
   }, []);
 
-  // Forçar o play assim que o URL estiver pronto e o componente montado
+  const handleStartVideo = async () => {
+    if (isVideoStarted || isFetching) return;
+    
+    setIsFetching(true);
+    setIsVideoStarted(true);
+
+    try {
+      const mobileCheck = typeof window !== 'undefined' && window.innerWidth < 1024;
+      const videoPath = mobileCheck 
+        ? 'videoapresentacao/video menor resolucao .mp4' 
+        : 'videoapresentacao/HAPPY - VIDEO SITE HORIZONTAL.mp4';
+        
+      const videoRefStorage = ref(storage, videoPath);
+      const url = await getDownloadURL(videoRefStorage);
+      setVideoUrl(url);
+    } catch (error) {
+      setVideoUrl("https://firebasestorage.googleapis.com/v0/b/happy-jumpy.firebasestorage.app/o/videoapresentacao%2FHAPPY%20-%20VIDEO%20SITE%20-%20HORIZONTAL%20(V1).mp4?alt=media");
+    } finally {
+      setIsFetching(false);
+    }
+  };
+
+  // Forçar o play assim que o URL estiver pronto
   useEffect(() => {
     if (videoUrl && videoRef.current) {
       videoRef.current.play().catch(error => {
@@ -80,7 +88,7 @@ const HeroSection = () => {
             playsInline
             onLoadedData={() => setIsVideoLoaded(true)}
             poster="https://firebasestorage.googleapis.com/v0/b/happy-jumpy.firebasestorage.app/o/logo%2Flogo-happy-jumpy.png?alt=media"
-            preload="metadata"
+            preload="auto"
             className="w-full h-full object-cover opacity-100 transition-opacity duration-1000"
             src={videoUrl}
           >
@@ -126,22 +134,44 @@ const HeroSection = () => {
             </p>
 
             <div className="flex flex-wrap gap-4 items-center">
-              <Button
-                onClick={scrollToPulseiras}
-                className="rounded-full font-extrabold px-8 py-6 text-lg group bg-transparent border-2 border-[#C8D40B] text-[#C8D40B] hover:bg-[#C8D40B] hover:text-black hover:drop-shadow-[0_0_15px_#C8D40B] transition-all duration-300"
-              >
-                Comprar Ingressos
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Button>
+              {!isVideoStarted ? (
+                <Button
+                  onClick={handleStartVideo}
+                  disabled={isFetching}
+                  className="rounded-full font-extrabold px-10 py-6 text-xl group bg-[#CB2185] border-2 border-[#CB2185] text-white hover:bg-transparent hover:text-[#CB2185] hover:drop-shadow-[0_0_20px_#CB2185] transition-all duration-500 scale-110"
+                >
+                  {isFetching ? (
+                     <div className="flex items-center gap-2">
+                       <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                       Carregando...
+                     </div>
+                  ) : (
+                    <>
+                      Ver Vídeo
+                      <ArrowRight className="ml-2 w-6 h-6 group-hover:translate-x-1 transition-transform" />
+                    </>
+                  )}
+                </Button>
+              ) : (
+                <Button
+                  onClick={scrollToPulseiras}
+                  className="rounded-full font-extrabold px-8 py-6 text-lg group bg-transparent border-2 border-[#C8D40B] text-[#C8D40B] hover:bg-[#C8D40B] hover:text-black hover:drop-shadow-[0_0_15px_#C8D40B] transition-all duration-300"
+                >
+                  Comprar Ingressos
+                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              )}
 
-              <Button
-                onClick={toggleSound}
-                variant="ghost"
-                size="icon"
-                className="rounded-full border-2 border-[#CB2185] text-[#CB2185] !bg-transparent hover:bg-[#CB2185] hover:text-white transition-all duration-300"
-              >
-                {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
-              </Button>
+              {isVideoStarted && (
+                <Button
+                  onClick={toggleSound}
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full border-2 border-[#CB2185] text-[#CB2185] !bg-transparent hover:bg-[#CB2185] hover:text-white transition-all duration-300"
+                >
+                  {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -161,5 +191,6 @@ const HeroSection = () => {
     </section>
   );
 };
+
 
 export default HeroSection;
