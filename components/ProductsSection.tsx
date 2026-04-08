@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Clock, Star, Zap, ShoppingCart, Check } from 'lucide-react';
+import { Clock, Star, Zap, Check, Ticket } from 'lucide-react';
 import { useCart, Product } from '@/contexts/CartContext';
 import { toast } from 'sonner';
 import { db } from '@/lib/firebase';
@@ -44,7 +44,7 @@ const ProductsSection = () => {
 
   const handleAddToCart = (product: Product) => {
     addToCart(product);
-    toast.success('Produto adicionado ao carrinho!', {
+    toast.success('Adicionado aos pendentes!', {
       description: `${product.name} foi adicionado com sucesso.`,
     });
   };
@@ -178,8 +178,8 @@ const ProductsSection = () => {
                         </span>
                       </div>
 
-                      <div className="h-12 w-12 bg-[#39FF14] rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(57,255,20,0.4)] group-hover:scale-110 transition-transform">
-                        <ShoppingCart className="w-6 h-6 text-black font-bold" />
+                      <div className="px-4 py-2 bg-[#39FF14] text-black rounded-lg font-titan uppercase text-[10px] shadow-[0_0_15px_rgba(57,255,20,0.3)] group-hover:scale-110 transition-transform">
+                        Comprar
                       </div>
                     </div>
                   </div>

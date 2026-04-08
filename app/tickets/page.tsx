@@ -5,6 +5,7 @@ import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Clock, ShoppingCart, Ticket, CheckCircle2, ShieldCheck } from 'lucide-react';
 import { useCart, Product } from '@/contexts/CartContext';
+import { useUI } from '@/contexts/UIContext';
 import { toast } from 'sonner';
 import { db } from '@/lib/firebase';
 import { collection, onSnapshot } from 'firebase/firestore';
@@ -12,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function TicketsPage() {
   const { addToCart } = useCart();
+  const { openCart } = useUI(); // Adicionado para abrir a aba lateral
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -28,6 +30,7 @@ export default function TicketsPage() {
             price: productData.price,
             duration: productData.duration_minutes ? `${productData.duration_minutes} min` : 'N/A',
             imageUrl: productData.photo_url || '',
+            duration_minutes: productData.duration_minutes
           };
         });
         setProducts(productsArray);
@@ -40,10 +43,15 @@ export default function TicketsPage() {
     return () => unsubscribe();
   }, []);
 
-  const handleAddToCart = (product: Product) => {
+  const handleAddToCartClick = (product: Product) => {
+    // Adiciona ao carrinho sem horário (pendente agendamento)
     addToCart(product);
-    toast.success('Ticket adicionado!', {
-      description: `${product.name} entrou no seu carrinho.`,
+    
+    // Abre a aba lateral automaticamente
+    openCart();
+    
+    toast.success('Adicionado aos pendentes!', {
+      description: `Agende o horário do seu ticket agora na aba lateral.`,
     });
   };
 
@@ -118,10 +126,10 @@ export default function TicketsPage() {
                     </div>
                     
                     <button
-                      onClick={() => handleAddToCart(product)}
-                      className="p-4 bg-[#39FF14] text-black rounded-2xl hover:scale-110 active:scale-95 transition-all shadow-[0_0_20px_rgba(57,255,20,0.3)]"
+                      onClick={() => handleAddToCartClick(product)}
+                      className="px-8 py-3 bg-[#39FF14] text-black rounded-2xl font-titan uppercase text-sm hover:scale-110 active:scale-95 transition-all shadow-[0_0_20px_rgba(57,255,20,0.3)]"
                     >
-                      <ShoppingCart className="w-6 h-6 font-bold" />
+                      Comprar
                     </button>
                   </div>
                 </div>

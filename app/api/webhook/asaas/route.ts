@@ -117,7 +117,9 @@ export async function POST(request: Request) {
               validated: false,
               createdAt: createdAt.toISOString(),
               validatedAt: null,
-              expiresAt: expiresAt.toISOString(),
+              startTime: item.startTime || null,
+              endTime: item.endTime || null,
+              expiresAt: item.endTime || expiresAt.toISOString(),
             });
 
             console.log(`Ingresso ${newTicketRef.id} (item: ${itemName}, ${i + 1}/${quantity}) criado para o usuário ${userId} com código ${ticketCode}.`);

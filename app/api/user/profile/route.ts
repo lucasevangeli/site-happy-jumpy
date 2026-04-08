@@ -3,6 +3,35 @@ import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import admin from '@/lib/firebase-admin';
 import { getFirestore } from 'firebase-admin/firestore';
+import { auth as firebaseAuth } from 'firebase-admin';
+
+export async function GET(request: Request) {
+  const headersList = headers();
+  const authorization = headersList.get('authorization');
+
+  if (!authorization || !authorization.startsWith('Bearer ')) {
+    return NextResponse.json({ error: 'Token de autorização ausente.' }, { status: 401 });
+  }
+
+  const token = authorization.split('Bearer ')[1];
+
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    const { uid } = decodedToken;
+
+    const db = getFirestore(admin.app(), 'happy');
+    const userDoc = await db.collection('users').doc(uid).get();
+
+    if (!userDoc.exists) {
+      return NextResponse.json({ error: 'Perfil não encontrado.' }, { status: 404 });
+    }
+
+    return NextResponse.json(userDoc.data());
+  } catch (error) {
+    console.error('Erro ao buscar perfil:', error);
+    return NextResponse.json({ error: 'Erro ao carregar dados do perfil.' }, { status: 403 });
+  }
+}
 
 export async function POST(request: Request) {
   // 1. Autenticação do usuário via Firebase Auth

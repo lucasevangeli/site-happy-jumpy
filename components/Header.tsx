@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from 'react';
 import { 
-  ShoppingCart, Menu, X, User, Phone, Mail, MapPin, Ticket, 
+  ShoppingCart, Menu, X, User, Phone, Mail, MapPin, Ticket, Clock, 
   ChevronDown, House, LayoutGrid, TicketSlash, Image as ImageIcon, MessageCircle 
 } from 'lucide-react'; 
 import { useRouter, usePathname } from 'next/navigation';
@@ -108,8 +108,15 @@ const Header = () => {
     openAuth,
     isTicketDrawerOpen, openTicketDrawer, closeTicketDrawer
   } = useUI();
-  const { user } = useAuth();
+  const { user, profile, ticketCount } = useAuth();
   const router = useRouter();
+
+  const getInitials = (name: string) => {
+    if (!name) return "??";
+    const names = name.split(" ");
+    if (names.length === 1) return names[0].substring(0, 2).toUpperCase();
+    return (names[0][0] + names[names.length - 1][0]).toUpperCase();
+  };
   const pathname = usePathname();
   const isHome = pathname === '/';
 
@@ -348,9 +355,18 @@ const Header = () => {
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="relative bg-transparent hover:bg-transparent p-0 group hover:drop-shadow-[0_0_10px_#8A2BE2] transition-all duration-300">
                           <div className="relative">
-                            <User className="h-6 w-6 text-[#8A2BE2] group-hover:brightness-125 transition-colors duration-200" />
+                            {user && profile?.fullName ? (
+                              <div className="h-7 w-7 rounded-full bg-gradient-to-br from-[#8A2BE2] to-[#FF007F] flex items-center justify-center shadow-lg shadow-purple-500/20 group-hover:scale-110 transition-transform duration-200">
+                                <span className="text-[10px] font-black text-white uppercase tracking-tighter">
+                                  {getInitials(profile.fullName)}
+                                </span>
+                              </div>
+                            ) : (
+                              <User className="h-6 w-6 text-[#8A2BE2] group-hover:brightness-125 transition-colors duration-200" />
+                            )}
+                            
                             {getTotalItems() > 0 && (
-                              <span className="absolute -top-1 -right-1 bg-[#39FF14] text-black text-[10px] font-black w-4 h-4 flex items-center justify-center rounded-full border-2 border-black">
+                              <span className="absolute -top-1 -right-1 bg-[#39FF14] text-black text-[10px] font-black w-4 h-4 flex items-center justify-center rounded-full border-2 border-black z-20">
                                 {getTotalItems()}
                               </span>
                             )}
@@ -374,9 +390,9 @@ const Header = () => {
                          >
                             <div className="flex items-center gap-3">
                               <div className="p-2 rounded-lg bg-[#39FF14]/10 group-hover:bg-[#39FF14]/20 transition-colors">
-                                <ShoppingCart className="w-4 h-4 text-[#39FF14]" />
+                                <Clock className="w-4 h-4 text-[#39FF14]" />
                               </div>
-                              <span className="font-fredoka font-bold text-gray-200">Meu Carrinho</span>
+                              <span className="font-fredoka font-bold text-gray-200">Pendentes</span>
                             </div>
                             {getTotalItems() > 0 && (
                               <span className="bg-[#39FF14] text-black text-[10px] font-black px-2 py-0.5 rounded-full shadow-lg shadow-[#39FF14]/20">
@@ -386,16 +402,35 @@ const Header = () => {
                          </DropdownMenuItem>
 
                          {user && (
-                            <DropdownMenuItem 
-                              onClick={openTicketDrawer} 
-                              className="flex items-center gap-3 p-3 focus:bg-white/5 rounded-xl cursor-pointer transition-all duration-300 group mb-1"
-                            >
-                               <div className="p-2 rounded-lg bg-[#FF6B00]/10 group-hover:bg-[#FF6B00]/20 transition-colors">
-                                 <Ticket className="w-4 h-4 text-[#FF6B00]" />
-                               </div>
-                               <span className="font-fredoka font-bold text-gray-200">Meus Ingressos</span>
-                            </DropdownMenuItem>
-                         )}
+                            <>
+                             <DropdownMenuItem 
+                               onClick={openTicketDrawer} 
+                               className="flex items-center justify-between p-3 focus:bg-white/5 rounded-xl cursor-pointer transition-all duration-300 group mb-1"
+                             >
+                                <div className="flex items-center gap-3">
+                                  <div className="p-2 rounded-lg bg-[#FF6B00]/10 group-hover:bg-[#FF6B00]/20 transition-colors">
+                                    <Ticket className="w-4 h-4 text-[#FF6B00]" />
+                                  </div>
+                                  <span className="font-fredoka font-bold text-gray-200">Meus Ingressos</span>
+                                </div>
+                                {ticketCount > 0 && (
+                                  <span className="bg-[#FF6B00] text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-lg shadow-[#FF6B00]/20">
+                                    {ticketCount}
+                                  </span>
+                                )}
+                             </DropdownMenuItem>
+                             
+                             <DropdownMenuItem 
+                               onClick={() => router.push('/perfil')} 
+                               className="flex items-center gap-3 p-3 focus:bg-white/5 rounded-xl cursor-pointer transition-all duration-300 group mb-1"
+                             >
+                                <div className="p-2 rounded-lg bg-blue-500/10 group-hover:bg-blue-500/20 transition-colors">
+                                  <User className="w-4 h-4 text-blue-400" />
+                                </div>
+                                <span className="font-fredoka font-bold text-gray-200">Dados Pessoais</span>
+                             </DropdownMenuItem>
+                            </>
+                          )}
 
                          <DropdownMenuSeparator className="bg-white/5 my-2" />
 
