@@ -8,6 +8,7 @@ import CombosSection from '@/components/CombosSection';
 import GallerySection from '@/components/GallerySection';
 import ContactSection from '@/components/ContactSection';
 import AttractionsSection from '@/components/AttractionsSection';
+import FoamSection from '@/components/FoamSection';
 import BirthdayBanner from '@/components/BirthdayBanner';
 
 export default function Home() {
@@ -17,6 +18,7 @@ export default function Home() {
       <HeroSection />
       <AboutSection />
       <AttractionsSection />
+      <FoamSection />
       <BirthdayBanner />
       <ProductsSection />
       <CombosSection />

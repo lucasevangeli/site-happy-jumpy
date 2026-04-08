@@ -55,19 +55,19 @@ function Borders() {
     usePlane(() => ({ 
         rotation: [-Math.PI / 2, 0, 0], 
         position: [0, -h, 0] 
-    }), [h]);
+    }), undefined, [h]);
 
     // Left Wall
     usePlane(() => ({ 
         rotation: [0, Math.PI / 2, 0], 
         position: [-w, 0, 0] 
-    }), [w]);
+    }), undefined, [w]);
 
     // Right Wall
     usePlane(() => ({ 
         rotation: [0, -Math.PI / 2, 0], 
         position: [w, 0, 0] 
-    }), [w]);
+    }), undefined, [w]);
 
     // Back (Depth limit)
     usePlane(() => ({ 

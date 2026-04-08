@@ -5,10 +5,6 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight, Volume2, VolumeX } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
-const FoamPit = dynamic(() => import('./FoamPit'), {
-  ssr: false,
-  loading: () => <div className="w-full h-full" />
-});
 import { ref, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/lib/firebase';
 
@@ -175,11 +171,6 @@ const HeroSection = () => {
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Piscina de Espuma Interativa - Reabilitada no Mobile para Teste */}
-      <div className="absolute inset-0 z-20 pointer-events-none">
-        <FoamPit />
       </div>
 
       {/* Indicador de rolagem - Elevado para z-40 */}
