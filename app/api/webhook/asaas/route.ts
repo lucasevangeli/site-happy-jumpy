@@ -89,9 +89,17 @@ export async function POST(request: Request) {
         const expiresAt = new Date(createdAt);
         expiresAt.setDate(expiresAt.getDate() + 1);
 
-        const generateTicketCode = (prefix: string) => {
-          const randomPart = Math.random().toString(36).substring(2, 10).toUpperCase();
-          return `${prefix.substring(0, 4).toUpperCase()}-${randomPart}`;
+        const generateTicketCode = () => {
+          const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+          const numbers = '0123456789';
+          let result = '';
+          for (let i = 0; i < 3; i++) {
+            result += letters.charAt(Math.floor(Math.random() * letters.length));
+          }
+          for (let i = 0; i < 3; i++) {
+            result += numbers.charAt(Math.floor(Math.random() * numbers.length));
+          }
+          return result;
         };
 
         // Itera sobre cada item do carrinho para criar os ingressos
@@ -102,7 +110,7 @@ export async function POST(request: Request) {
 
           for (let i = 0; i < quantity; i++) {
             const newTicketRef = ticketsRef.doc();
-            const ticketCode = generateTicketCode(item.id || 'TKT');
+            const ticketCode = generateTicketCode();
 
             await newTicketRef.set({
               id: newTicketRef.id,
@@ -117,9 +125,9 @@ export async function POST(request: Request) {
               validated: false,
               createdAt: createdAt.toISOString(),
               validatedAt: null,
-              startTime: item.startTime || null,
-              endTime: item.endTime || null,
-              expiresAt: item.endTime || expiresAt.toISOString(),
+              startTime: item.start_time || item.startTime || null,
+              endTime: item.end_time || item.endTime || null,
+              expiresAt: item.end_time || item.endTime || expiresAt.toISOString(),
             });
 
             console.log(`Ingresso ${newTicketRef.id} (item: ${itemName}, ${i + 1}/${quantity}) criado para o usuário ${userId} com código ${ticketCode}.`);
