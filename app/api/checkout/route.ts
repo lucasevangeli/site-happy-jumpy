@@ -5,7 +5,7 @@ import { getFirestore } from 'firebase-admin/firestore';
 
 // Função para obter dados do usuário, incluindo o asaasCustomerId
 async function getUserData(uid: string) {
-  const firestore = getFirestore('happy');
+  const firestore = getFirestore(admin.app(), 'happy');
   const userDoc = await firestore.collection('users').doc(uid).get();
   if (!userDoc.exists) {
     return null;

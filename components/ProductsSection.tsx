@@ -30,6 +30,7 @@ const ProductsSection = () => {
             price: productData.price,
             duration: productData.duration_minutes ? `${productData.duration_minutes} min` : 'N/A',
             imageUrl: productData.photo_url || '',
+            type: 'wristband',
           };
         });
         setProducts(productsArray);

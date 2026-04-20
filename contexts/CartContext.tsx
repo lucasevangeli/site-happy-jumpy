@@ -8,6 +8,7 @@ export interface Product {
   description: string;
   price: number;
   duration: string;
+  type?: 'wristband' | 'food' | 'combo' | 'other';
   imageUrl?: string;
 }
 

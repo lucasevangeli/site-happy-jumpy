@@ -27,15 +27,18 @@ export async function POST(request: Request) {
       console.log(`Recebido webhook para pagamento Asaas ID: ${asaasPaymentId} com status: ${asaasStatus}`);
 
       // 3. Encontrar o pagamento correspondente no Firebase Firestore
-      const firestore = getFirestore(admin.app(), 'happy');
+      const db = getFirestore(admin.app(), 'happy');
+    const firestore = db;
       const paymentsRef = firestore.collection('payments');
 
       const snapshot = await paymentsRef.where('asaasPaymentId', '==', asaasPaymentId).limit(1).get();
 
       if (snapshot.empty) {
-        console.warn(`Webhook recebido para asaasPaymentId ${asaasPaymentId}, mas não foi encontrado no Firebase.`);
+        console.log(`ERRO: Webhook recebido para asaasPaymentId ${asaasPaymentId}, mas não foi encontrado no Firebase.`);
         return NextResponse.json({ message: 'Pagamento não encontrado, mas webhook recebido.' });
       }
+
+      console.log(`Pagamento encontrado! Firebase ID: ${snapshot.docs[0].id}`);
 
       // 4. Atualizar o status do pagamento no Firebase
       const paymentDoc = snapshot.docs[0];
@@ -54,8 +57,10 @@ export async function POST(request: Request) {
       const { userId, cart } = paymentData;
 
       if (!userId || !cart || !Array.isArray(cart) || cart.length === 0) {
+        console.log(`ERRO: Dados insuficientes (userId ou cart) no pagamento ${firebasePaymentId} para gerar ingressos.`);
         console.error(`Dados insuficientes (userId ou cart) no pagamento ${firebasePaymentId} para gerar ingressos.`);
       } else {
+        console.log(`Dados extraídos: User: ${userId} | Itens no carrinho: ${cart.length}`);
         // Buscar dados do usuário para ter o nome na venda
         const userSnapshot = await firestore.collection('users').doc(userId).get();
         const userData = userSnapshot.data() || {};
@@ -80,7 +85,7 @@ export async function POST(request: Request) {
             title: item.name || 'Produto',
             quantity: item.quantity || 1,
             unit_price: item.price || 0,
-            type: 'product'
+            type: item.type || 'product'
           }))
         });
 
@@ -102,36 +107,103 @@ export async function POST(request: Request) {
           return result;
         };
 
-        // Itera sobre cada item do carrinho para criar os ingressos
+        // Itera sobre cada item do carrinho para criar os ingressos e identificar itens de cozinha
+        const foodItemsForKitchen = [];
+
         for (const item of cart) {
           const quantity = item.quantity || 1;
           const itemName = item.name || 'Ingresso';
+          const itemType = item.type || 'undefined';
           const itemDescription = item.description || `Acesso ao evento ${itemName}`;
 
-          for (let i = 0; i < quantity; i++) {
-            const newTicketRef = ticketsRef.doc();
-            const ticketCode = generateTicketCode();
 
-            await newTicketRef.set({
-              id: newTicketRef.id,
-              orderId: saleId,
-              userId: userId,
-              productId: item.id,
-              eventId: item.id,
-              itemName: itemName,
-              itemDescription: itemDescription,
-              code: ticketCode,
-              qrCode: '',
-              validated: false,
-              createdAt: createdAt.toISOString(),
-              validatedAt: null,
-              startTime: item.start_time || item.startTime || null,
-              endTime: item.end_time || item.endTime || null,
-              expiresAt: item.end_time || item.endTime || expiresAt.toISOString(),
+          // Identificar itens de cardápio (Incluindo o tipo 'menu' que foi identificado no teste)
+          // EXCEÇÃO: Se for 'wristband' ou 'ticket', NÃO vai para a cozinha.
+          const isKitchenItem = 
+            item.type === 'product' || 
+            item.type === 'food' || 
+            item.type === 'pizza' || 
+            item.type === 'combo' || 
+            item.type === 'menu' ||
+            item.type === 'lanche' ||
+            (!item.type) ||
+            (item.type !== 'wristband' && item.type !== 'ticket');
+          
+          if (isKitchenItem) {
+            foodItemsForKitchen.push({
+              product_id: item.id,
+              product_title: item.name || item.title || 'Produto',
+              quantity: item.quantity || 1,
+              addons_selected: item.addons || [],
+              customer_notes: item.notes || '',
             });
-
-            console.log(`Ingresso ${newTicketRef.id} (item: ${itemName}, ${i + 1}/${quantity}) criado para o usuário ${userId} com código ${ticketCode}.`);
           }
+
+          // SÓ criar ingressos se o item for 'wristband' ou 'ticket'
+          if (item.type === 'wristband' || item.type === 'ticket') {
+            for (let i = 0; i < quantity; i++) {
+              const newTicketRef = ticketsRef.doc();
+              const ticketCode = generateTicketCode();
+
+              await newTicketRef.set({
+                id: newTicketRef.id,
+                orderId: saleId,
+                userId: userId,
+                productId: item.id,
+                eventId: item.id,
+                itemName: itemName,
+                itemDescription: itemDescription,
+                code: ticketCode,
+                qrCode: '',
+                validated: false,
+                createdAt: createdAt.toISOString(),
+                validatedAt: null,
+                startTime: item.start_time || item.startTime || null,
+                endTime: item.end_time || item.endTime || null,
+                expiresAt: item.end_time || item.endTime || expiresAt.toISOString(),
+              });
+
+              console.log(`Ingresso ${newTicketRef.id} (item: ${itemName}, ${i + 1}/${quantity}) criado para o usuário ${userId} com código ${ticketCode}.`);
+            }
+
+            // --- LÓGICA DE PONTOS DE FIDELIDADE ---
+            // Regra: 30 min = 0.5 ponto, 1h = 1 ponto, 2h = 2 pontos (duration_minutes / 60)
+            const duration = item.duration_minutes || 0;
+            if (duration > 0) {
+              const pointsEarned = (duration / 60) * quantity;
+              const loyaltyPointsRef = firestore.collection('loyalty_points');
+              const now = new Date();
+              const expiresAtPoints = new Date(now);
+              expiresAtPoints.setDate(expiresAtPoints.getDate() + 90);
+
+              await loyaltyPointsRef.add({
+                userId: userId,
+                orderId: saleId,
+                points: pointsEarned,
+                description: `Acúmulo de pontos - ${itemName}`,
+                createdAt: now.toISOString(),
+                expiresAt: expiresAtPoints.toISOString(),
+              });
+              
+              console.log(`Concedidos ${pointsEarned} pontos para o usuário ${userId} pela compra de ${itemName}.`);
+            }
+          }
+        }
+
+        // 7. Criar pedido na cozinha se houver itens de cardápio
+        if (foodItemsForKitchen.length > 0) {
+          const orderCode = `P${Math.floor(Math.random() * 9000) + 1000}`;
+          const kitchenOrdersRef = firestore.collection('kitchen_orders');
+          
+          await kitchenOrdersRef.add({
+            sale_id: saleId,
+            order_code: orderCode,
+            status: 'pending',
+            created_at: new Date().toISOString(),
+            items: foodItemsForKitchen,
+            customer_name: userData?.fullName || 'Cliente App',
+            userId: userId
+          });
         }
       }
     } else {

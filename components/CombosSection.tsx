@@ -58,6 +58,7 @@ const CombosSection = () => {
       price: combo.price,
       duration: 'Combo Especial',
       imageUrl: combo.photo_url || '',
+      type: 'food',
     };
     addToCart(product);
     toast.success('Adicionado aos pendentes!', {

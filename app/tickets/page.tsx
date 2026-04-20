@@ -30,7 +30,8 @@ export default function TicketsPage() {
             price: productData.price,
             duration: productData.duration_minutes ? `${productData.duration_minutes} min` : 'N/A',
             imageUrl: productData.photo_url || '',
-            duration_minutes: productData.duration_minutes
+            duration_minutes: productData.duration_minutes,
+            type: 'wristband'
           };
         });
         setProducts(productsArray);
