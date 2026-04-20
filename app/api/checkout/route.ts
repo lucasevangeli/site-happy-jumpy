@@ -170,12 +170,12 @@ export async function POST(request: Request) {
             ccv: creditCard.ccv,
           };
           paymentPayload.creditCardHolderInfo = {
-            name: userData.fullName,
-            email: userData.email,
-            cpfCnpj: userData.cpfCnpj,
-            postalCode: userData.postalCode,
-            addressNumber: userData.addressNumber,
-            phone: userData.phone,
+            name: userData?.fullName || '',
+            email: userData?.email || '',
+            cpfCnpj: userData?.cpfCnpj || '',
+            postalCode: userData?.postalCode || '',
+            addressNumber: userData?.addressNumber || '',
+            phone: userData?.phone || '',
           };
         }
 
@@ -321,7 +321,7 @@ export async function POST(request: Request) {
         });
 
         // Push Notification (se disponível)
-        if (userData.expoPushToken) {
+        if (userData?.expoPushToken) {
           try {
             await fetch('https://exp.host/--/api/v2/push/send', {
               method: 'POST',
