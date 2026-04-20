@@ -4,13 +4,13 @@ import admin from '@/lib/firebase-admin';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { tokens, title, body: message, data } = body;
+    const { tokens, title, body: message, data, imageUrl } = body;
 
     if (!tokens || !Array.isArray(tokens) || tokens.length === 0) {
       return NextResponse.json({ error: 'Nenhum token fornecido.' }, { status: 400 });
     }
 
-    console.log(`[API Notifications] Enviando push para ${tokens.length} dispositivos...`);
+    console.log(`[API Notifications] Enviando push com imagem para ${tokens.length} dispositivos...`);
 
     const response = await fetch('https://exp.host/--/api/v2/push/send', {
       method: 'POST',
@@ -25,8 +25,10 @@ export async function POST(request: Request) {
         body: message,
         data: data || { type: 'admin_notification' },
         sound: 'default',
+        attachments: imageUrl ? [{ url: imageUrl }] : [], // Para iOS
         android: {
           channelId: 'default',
+          image: imageUrl // Para Android
         },
       }))),
     });
