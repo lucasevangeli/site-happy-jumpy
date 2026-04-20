@@ -37,12 +37,9 @@ export async function POST(request: Request) {
     const { paymentMethod, totalValue, creditCard } = body;
 
     const userData = await getUserData(uid);
-    if (!userData || !userData.asaasCustomerId) {
-      return NextResponse.json({ error: 'Perfil de usuário ou ID de cliente Asaas não encontrado.' }, { status: 404 });
-    }
-    const { asaasCustomerId } = userData;
+    const { asaasCustomerId } = userData || {};
 
-    if (!paymentMethod || !totalValue) {
+    if (!paymentMethod || (paymentMethod !== 'POINTS' && !totalValue)) {
       return NextResponse.json({ error: 'Método de pagamento e valor total são obrigatórios.' }, { status: 400 });
     }
 
@@ -56,6 +53,9 @@ export async function POST(request: Request) {
     // 4. Lógica para criar a cobrança no Asaas
     switch (paymentMethod) {
       case 'PIX': {
+        if (!asaasCustomerId) {
+          return NextResponse.json({ error: 'ID de cliente Asaas não encontrado.' }, { status: 404 });
+        }
         const dueDate = new Date();
         dueDate.setDate(dueDate.getDate() + 1); // Vencimento em 1 dia
         const year = dueDate.getFullYear();
@@ -142,6 +142,9 @@ export async function POST(request: Request) {
       }
 
       case 'CREDIT_CARD': {
+        if (!asaasCustomerId) {
+          return NextResponse.json({ error: 'ID de cliente Asaas não encontrado.' }, { status: 404 });
+        }
         const { creditCard, creditCardToken } = body;
 
         if (!creditCard && !creditCardToken) {
@@ -287,11 +290,14 @@ export async function POST(request: Request) {
               id: newTicketRef.id,
               orderId: saleId,
               userId: uid,
-              productId: item.id,
+              productId: String(item.id),
+              eventId: String(item.id),
               itemName: item.name,
               itemDescription: item.description || '',
               code: ticketCode,
+              qrCode: '',
               validated: false,
+              validatedAt: null,
               createdAt: createdAt.toISOString(),
               startTime: item.start_time || null,
               endTime: item.end_time || null,
