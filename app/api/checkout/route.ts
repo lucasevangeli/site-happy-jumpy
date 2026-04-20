@@ -156,7 +156,7 @@ export async function POST(request: Request) {
           billingType: 'CREDIT_CARD',
           dueDate: formattedDueDate,
           value: totalValue,
-          description: `Pedido de ${userData.fullName}`,
+          description: `Pedido de ${userData?.fullName || 'Cliente'}`,
         };
 
         if (creditCardToken) {
