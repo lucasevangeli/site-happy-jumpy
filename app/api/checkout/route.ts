@@ -68,7 +68,7 @@ export async function POST(request: Request) {
           billingType: 'PIX',
           value: totalValue,
           dueDate: formattedDueDate,
-          description: `Pedido de ${userData.fullName}`,
+          description: `Pedido de ${userData?.fullName || 'Cliente'}`,
         };
 
         // ETAPA 1: Criar a cobrança
@@ -245,7 +245,7 @@ export async function POST(request: Request) {
           created_at: new Date().toISOString(),
           created_by: 'App (Pontos)',
           customer_id: uid,
-          customer_name: userData.fullName || 'Cliente App',
+          customer_name: userData?.fullName || 'Cliente App',
           items: cartItems.map((item: any) => ({
             item_id: item.id,
             title: item.name || 'Produto',
