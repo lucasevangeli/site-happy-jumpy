@@ -196,6 +196,145 @@ export async function POST(request: Request) {
         return NextResponse.json(paymentData);
       }
 
+      case 'POINTS': {
+        const firestore = getFirestore(admin.app(), 'happy');
+        
+        // 1. Verificar saldo de pontos no servidor (SEGURANÇA)
+        const loyaltyPointsRef = firestore.collection('loyalty_points');
+        const pointsSnapshot = await loyaltyPointsRef.where('userId', '==', uid).get();
+        let currentBalance = 0;
+        pointsSnapshot.forEach(doc => {
+          currentBalance += doc.data().points || 0;
+        });
+
+        // 2. Calcular custo (5 pontos por ingresso)
+        const cartItems = body.cart || [];
+        const ticketsInCart = cartItems.filter((item: any) => item.type === 'ticket' || item.type === 'wristband');
+        
+        if (ticketsInCart.length !== cartItems.length) {
+          return NextResponse.json({ error: 'Pagamento com pontos disponível apenas para ingressos.' }, { status: 400 });
+        }
+
+        const totalTickets = ticketsInCart.reduce((sum: number, item: any) => sum + item.quantity, 0);
+        const costInPoints = totalTickets * 5;
+
+        if (currentBalance < costInPoints) {
+          return NextResponse.json({ error: `Saldo insuficiente. Você tem ${currentBalance} pontos e precisa de ${costInPoints}.` }, { status: 400 });
+        }
+
+        // 3. Processar resgate (Entrada negativa nos pontos)
+        await loyaltyPointsRef.add({
+          userId: uid,
+          points: -costInPoints,
+          description: `Resgate de pontos - ${totalTickets} ingresso(s)`,
+          createdAt: new Date().toISOString(),
+          type: 'REDEMPTION'
+        });
+
+        // 4. Criar registro de venda e pagamento CONFIRMADO
+        const saleRef = firestore.collection('sales').doc();
+        const saleId = saleRef.id;
+
+        await saleRef.set({
+          id: saleId,
+          total_amount: 0,
+          payment_method: 'POINTS',
+          created_at: new Date().toISOString(),
+          created_by: 'App (Pontos)',
+          customer_id: uid,
+          customer_name: userData.fullName || 'Cliente App',
+          items: cartItems.map((item: any) => ({
+            item_id: item.id,
+            title: item.name || 'Produto',
+            quantity: item.quantity || 1,
+            unit_price: 0,
+            type: item.type || 'product'
+          }))
+        });
+
+        const paymentDocRef = firestore.collection('payments').doc();
+        await paymentDocRef.set({
+          id: paymentDocRef.id,
+          userId: uid,
+          status: 'CONFIRMED',
+          totalValue: 0,
+          paymentMethod: 'POINTS',
+          createdAt: new Date().toISOString(),
+          cart: cartItems,
+          saleId: saleId
+        });
+
+        // 5. Gerar Ingressos (Cópia da lógica do webhook)
+        const ticketsRef = firestore.collection('tickets');
+        const createdAt = new Date();
+        const expiresAtDate = new Date(createdAt);
+        expiresAtDate.setDate(expiresAtDate.getDate() + 1);
+
+        const generateTicketCode = () => {
+          const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+          const numbers = '0123456789';
+          let result = '';
+          for (let i = 0; i < 3; i++) result += letters.charAt(Math.floor(Math.random() * letters.length));
+          for (let i = 0; i < 3; i++) result += numbers.charAt(Math.floor(Math.random() * numbers.length));
+          return result;
+        };
+
+        for (const item of cartItems) {
+          for (let i = 0; i < (item.quantity || 1); i++) {
+            const ticketCode = generateTicketCode();
+            const newTicketRef = ticketsRef.doc();
+            await newTicketRef.set({
+              id: newTicketRef.id,
+              orderId: saleId,
+              userId: uid,
+              productId: item.id,
+              itemName: item.name,
+              itemDescription: item.description || '',
+              code: ticketCode,
+              validated: false,
+              createdAt: createdAt.toISOString(),
+              startTime: item.start_time || null,
+              endTime: item.end_time || null,
+              expiresAt: item.end_time || expiresAtDate.toISOString(),
+            });
+          }
+        }
+
+        // 6. Notificações
+        const notificationTitle = 'Resgate de Pontos Sucesso! ⭐️';
+        const notificationBody = `Você resgatou ${costInPoints} pontos por ${totalTickets} ingresso(s). Bom divertimento!`;
+        
+        await firestore.collection('notifications').add({
+          userId: uid,
+          title: notificationTitle,
+          description: notificationBody,
+          type: 'points',
+          createdAt: new Date().toISOString(),
+          read: false,
+          metadata: { saleId }
+        });
+
+        // Push Notification (se disponível)
+        if (userData.expoPushToken) {
+          try {
+            await fetch('https://exp.host/--/api/v2/push/send', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                to: userData.expoPushToken,
+                title: notificationTitle,
+                body: notificationBody,
+                data: { type: 'points' }
+              })
+            });
+          } catch (e) {
+            console.error('Erro ao enviar push no resgate:', e);
+          }
+        }
+
+        return NextResponse.json({ success: true, message: 'Resgate realizado com sucesso!', saleId });
+      }
+
       default:
         return NextResponse.json({ error: 'Método de pagamento não suportado.' }, { status: 400 });
     }

@@ -7,6 +7,34 @@ import { getFirestore } from 'firebase-admin/firestore';
 // IMPORTANTE: O nome da variável deve ser ASAAS_WEBHOOK_TOKEN no seu .env.local
 const ASAAS_WEBHOOK_TOKEN = process.env.ASAAS_WEBHOOK_TOKEN;
 
+// Função para enviar notificação push via Expo
+async function sendPushNotification(expoPushToken: string, title: string, body: string, type?: string) {
+  try {
+    const message = {
+      to: expoPushToken,
+      sound: 'default',
+      title: title,
+      body: body,
+      data: { type: type || 'default' },
+    };
+
+    const response = await fetch('https://exp.host/--/api/v2/push/send', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Accept-encoding': 'gzip, deflate',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(message),
+    });
+
+    const resData = await response.json();
+    console.log('[Push] Resposta do Expo:', JSON.stringify(resData));
+  } catch (error) {
+    console.error('[Push] Erro ao enviar notificação:', error);
+  }
+}
+
 export async function POST(request: Request) {
   // 1. Verificar o token de segurança do webhook
   const headersList = headers();
@@ -137,6 +165,17 @@ export async function POST(request: Request) {
               addons_selected: item.addons || [],
               customer_notes: item.notes || '',
             });
+
+            // Adicionar notificação de pedido na cozinha
+            await firestore.collection('notifications').add({
+              userId: userId,
+              title: 'Pedido na Cozinha! 👨‍🍳',
+              description: `Seu pedido de ${item.name || 'item'} já está sendo preparado.`,
+              type: 'order',
+              createdAt: new Date().toISOString(),
+              read: false,
+              metadata: { saleId, itemId: item.id }
+            });
           }
 
           // SÓ criar ingressos se o item for 'wristband' ou 'ticket'
@@ -184,10 +223,46 @@ export async function POST(request: Request) {
                 createdAt: now.toISOString(),
                 expiresAt: expiresAtPoints.toISOString(),
               });
+
+              // Notificação de pontos ganhos
+              await firestore.collection('notifications').add({
+                userId: userId,
+                title: 'Você ganhou pontos! ⭐️',
+                description: `Você acabou de ganhar ${pointsEarned} pontos com a compra de ${itemName}.`,
+                type: 'points',
+                createdAt: now.toISOString(),
+                read: false,
+                metadata: { saleId, points: pointsEarned }
+              });
               
               console.log(`Concedidos ${pointsEarned} pontos para o usuário ${userId} pela compra de ${itemName}.`);
             }
           }
+        }
+
+        // 8. Enviar Notificação Push e Salvar no Histórico
+        const notificationTitle = 'Pagamento Confirmado! 🚀';
+        const notificationBody = 'Seu pedido foi processado com sucesso. Seus ingressos já estão disponíveis!';
+
+        // Salvar no histórico de notificações
+        await firestore.collection('notifications').add({
+          userId: userId,
+          title: notificationTitle,
+          description: notificationBody,
+          type: 'ticket',
+          createdAt: new Date().toISOString(),
+          read: false,
+          metadata: { saleId: saleId }
+        });
+
+        if (userData.expoPushToken) {
+          console.log(`Enviando notificação push para o usuário ${userId}...`);
+          await sendPushNotification(
+            userData.expoPushToken,
+            notificationTitle,
+            notificationBody,
+            'ticket'
+          );
         }
 
         // 7. Criar pedido na cozinha se houver itens de cardápio
