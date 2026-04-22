@@ -25,16 +25,20 @@ export async function POST(request: Request) {
         body: message,
         data: data || { type: 'admin_notification' },
         sound: 'default',
+        priority: 'high',
         attachments: imageUrl ? [{ url: imageUrl }] : [], // Para iOS
         android: {
-          channelId: 'default',
-          image: imageUrl // Para Android
+          channelId: 'high_priority',
+          priority: 'high',
+          image: imageUrl, // Imagem grande (expandível)
+          largeIcon: imageUrl // Ícone lateral
         },
       }))),
     });
 
     const result = await response.json();
-    
+    console.log('[API Notifications] Resposta completa da Expo:', JSON.stringify(result, null, 2));
+
     if (!response.ok) {
       console.error('[API Notifications] Erro na Expo:', result);
       return NextResponse.json({ error: 'Erro ao enviar via Expo', details: result }, { status: 500 });
