@@ -112,7 +112,7 @@ export async function POST(request: Request) {
 
         const internalPaymentId = paymentDocRef.id;
 
-        // ETAPA 3: Buscar o QR Code usando o ID do pagamento
+        console.log("DEBUG: Buscando QR Code para pagamento ID:", paymentData.id);
         const getQrCodeResponse = await fetch(`${process.env.ASAAS_API_URL}/payments/${paymentData.id}/pixQrCode`, {
           method: 'GET',
           headers: {
@@ -120,16 +120,15 @@ export async function POST(request: Request) {
             'access_token': process.env.ASAAS_API_KEY || '',
           },
         });
+        
+        const qrCodeData = await getQrCodeResponse.json();
 
         if (!getQrCodeResponse.ok) {
-          const errorData = await getQrCodeResponse.json();
-          console.error('Erro ao buscar QR Code PIX no Asaas (Etapa 3):', errorData);
+          console.error('Erro ao buscar QR Code PIX no Asaas (Etapa 3):', qrCodeData);
           // Atualiza o status no Firebase para falha
-          await paymentDocRef.update({ status: 'FAILED_QR_CODE_FETCH' });
-          return NextResponse.json({ error: 'Falha ao obter QR Code do PIX.', details: errorData }, { status: 500 });
+          await paymentDocRef.update({ status: 'FAILED_QR_CODE_FETCH', asaasError: qrCodeData });
+          return NextResponse.json({ error: 'Falha ao obter QR Code do PIX.', details: qrCodeData }, { status: 500 });
         }
-
-        const qrCodeData = await getQrCodeResponse.json();
 
         const pixData = {
           qrCode: qrCodeData.encodedImage,
@@ -196,6 +195,22 @@ export async function POST(request: Request) {
         }
 
         const paymentData = await asaasResponse.json();
+
+        // ETAPA 2: Salvar o estado inicial do pagamento no Firebase Firestore
+        const firestore = getFirestore(admin.app(), 'happy');
+        const paymentDocRef = firestore.collection('payments').doc();
+
+        await paymentDocRef.set({
+          id: paymentDocRef.id,
+          asaasPaymentId: paymentData.id,
+          userId: uid,
+          status: 'PENDING',
+          totalValue: totalValue,
+          paymentMethod: 'CREDIT_CARD',
+          createdAt: new Date().toISOString(),
+          cart: body.cart,
+        });
+
         return NextResponse.json(paymentData);
       }
 
@@ -251,7 +266,9 @@ export async function POST(request: Request) {
             title: item.name || 'Produto',
             quantity: item.quantity || 1,
             unit_price: 0,
-            type: item.type || 'product'
+            type: item.type || 'product',
+            image_url: item.image_url || null,
+            description: item.description || null
           }))
         });
 

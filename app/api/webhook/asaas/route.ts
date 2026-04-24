@@ -113,7 +113,12 @@ export async function POST(request: Request) {
             title: item.name || 'Produto',
             quantity: item.quantity || 1,
             unit_price: item.price || 0,
-            type: item.type || 'product'
+            type: item.type || 'product',
+            image_url: item.image_url || null,
+            description: item.description || null,
+            recipe: item.recipe || null,
+            addons: item.addons || [],
+            notes: item.notes || ''
           }))
         });
 
@@ -164,6 +169,8 @@ export async function POST(request: Request) {
               quantity: item.quantity || 1,
               addons_selected: item.addons || [],
               customer_notes: item.notes || '',
+              image_url: item.image_url || null,
+              product_description: item.description || null,
             });
 
             // Adicionar notificação de pedido na cozinha
@@ -268,6 +275,10 @@ export async function POST(request: Request) {
         // 7. Criar pedido na cozinha se houver itens de cardápio
         if (foodItemsForKitchen.length > 0) {
           const orderCode = `P${Math.floor(Math.random() * 9000) + 1000}`;
+          
+          // ATUALIZAR A VENDA COM O CÓDIGO DA COZINHA PARA FACILITAR CONSULTA
+          await saleRef.update({ order_code: orderCode });
+
           const kitchenOrdersRef = firestore.collection('kitchen_orders');
           
           await kitchenOrdersRef.add({
