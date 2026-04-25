@@ -37,7 +37,42 @@ export async function POST(request: Request) {
     const { paymentMethod, totalValue, creditCard } = body;
 
     const userData = await getUserData(uid);
-    const { asaasCustomerId } = userData || {};
+    let { asaasCustomerId } = userData || {};
+
+    // Se o ID do Asaas não existe mas temos os dados do perfil, criamos agora
+    if (!asaasCustomerId && userData?.fullName && userData?.cpfCnpj) {
+      try {
+        const asaasResponse = await fetch(`${process.env.ASAAS_API_URL}/customers`, {
+          method: 'POST',
+          headers: {
+            'accept': 'application/json',
+            'content-type': 'application/json',
+            'access_token': process.env.ASAAS_API_KEY || '',
+          },
+          body: JSON.stringify({
+            name: userData.fullName,
+            email: userData.email,
+            mobilePhone: userData.phone,
+            cpfCnpj: userData.cpfCnpj,
+            address: userData.address,
+            addressNumber: userData.addressNumber,
+            complement: userData.complement,
+            province: userData.province,
+            postalCode: userData.postalCode,
+          }),
+        });
+
+        if (asaasResponse.ok) {
+          const asaasData = await asaasResponse.json();
+          asaasCustomerId = asaasData.id;
+          const firestore = getFirestore(admin.app(), 'happy');
+          await firestore.collection('users').doc(uid).update({ asaasCustomerId });
+          console.log(`[Checkout] Cliente Asaas criado com sucesso para ${uid}: ${asaasCustomerId}`);
+        }
+      } catch (e) {
+        console.error('[Checkout] Erro ao criar cliente Asaas dinamicamente:', e);
+      }
+    }
 
     if (!paymentMethod || (paymentMethod !== 'POINTS' && !totalValue)) {
       return NextResponse.json({ error: 'Método de pagamento e valor total são obrigatórios.' }, { status: 400 });
