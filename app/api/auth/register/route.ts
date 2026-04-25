@@ -5,7 +5,7 @@ import { getFirestore } from 'firebase-admin/firestore';
 
 export async function POST(request: Request) {
   try {
-    const { email, password } = await request.json();
+    const { email, password, fullName } = await request.json();
 
     if (!email || !password) {
       return NextResponse.json(
@@ -18,6 +18,7 @@ export async function POST(request: Request) {
     const userRecord = await admin.auth().createUser({
       email,
       password,
+      displayName: fullName,
     });
 
     // Cria um registro inicial para o usuário no Firestore (banco 'happy')
@@ -26,6 +27,7 @@ export async function POST(request: Request) {
     await userDocRef.set({
       email: userRecord.email,
       uid: userRecord.uid,
+      fullName: fullName || null,
       createdAt: new Date().toISOString(),
       profileComplete: false, // Flag para indicar que o perfil detalhado não foi preenchido
     });

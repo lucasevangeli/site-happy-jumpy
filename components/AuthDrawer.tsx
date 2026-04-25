@@ -34,7 +34,6 @@ export function AuthDrawer({ isOpen, onOpenChange, onLoginSuccess }: AuthDrawerP
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
-  const [birthDate, setBirthDate] = useState("");
   const [cpfCnpj, setCpfCnpj] = useState("");
   const [address, setAddress] = useState("");
   const [addressNumber, setAddressNumber] = useState("");
@@ -53,7 +52,6 @@ export function AuthDrawer({ isOpen, onOpenChange, onLoginSuccess }: AuthDrawerP
     setPassword("");
     setFullName("");
     setPhone("");
-    setBirthDate("");
     setCpfCnpj("");
     setAddress("");
     setAddressNumber("");
@@ -141,7 +139,6 @@ export function AuthDrawer({ isOpen, onOpenChange, onLoginSuccess }: AuthDrawerP
         body: JSON.stringify({
           fullName,
           phone,
-          birthDate,
           cpfCnpj,
           address,
           addressNumber,
@@ -238,15 +235,9 @@ export function AuthDrawer({ isOpen, onOpenChange, onLoginSuccess }: AuthDrawerP
                   <Label htmlFor="fullName" className="text-neutral-200">Nome Completo</Label>
                   <Input id="fullName" placeholder="Seu nome completo" value={fullName} onChange={(e) => setFullName(e.target.value)} required/>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="cpfCnpj" className="text-neutral-200">CPF ou CNPJ</Label>
-                    <Input id="cpfCnpj" placeholder="000.000.000-00" value={cpfCnpj} onChange={(e) => setCpfCnpj(e.target.value)} required/>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="birthDate" className="text-neutral-200">Data de Nascimento</Label>
-                    <Input id="birthDate" type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} required/>
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="cpfCnpj" className="text-neutral-200">CPF ou CNPJ</Label>
+                  <Input id="cpfCnpj" placeholder="000.000.000-00" value={cpfCnpj} onChange={(e) => setCpfCnpj(e.target.value)} required/>
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="phone" className="text-neutral-200">Telefone / Celular</Label>

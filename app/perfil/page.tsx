@@ -28,7 +28,6 @@ interface UserProfile {
   fullName: string;
   email: string;
   phone: string;
-  birthDate: string;
   cpfCnpj: string;
   address: string;
   addressNumber: string;
@@ -281,41 +280,19 @@ export default function ProfilePage() {
                     )}
                   </div>
 
-                  <div className="grid grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label className="text-gray-500 text-[10px] uppercase tracking-[0.2em] font-black">CPF / CNPJ</Label>
-                      {isEditing ? (
-                        <Input 
-                          name="cpfCnpj"
-                          value={formData?.cpfCnpj}
-                          onChange={handleChange}
-                          className="h-11 bg-white/5 border-white/10 rounded-xl focus:border-green-400 transition-all font-fredoka text-sm"
-                          required
-                        />
-                      ) : (
-                        <p className="text-md text-white font-fredoka font-bold">{profile?.cpfCnpj}</p>
-                      )}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="text-gray-500 text-[10px] uppercase tracking-[0.2em] font-black">Nascimento</Label>
-                      {isEditing ? (
-                        <Input 
-                          name="birthDate"
-                          type="date"
-                          value={formData?.birthDate}
-                          onChange={handleChange}
-                          className="h-11 bg-white/5 border-white/10 rounded-xl focus:border-green-400 transition-all font-fredoka text-sm"
-                          required
-                        />
-                      ) : (
-                        <div className="flex items-center gap-2">
-                          <p className="text-md text-white font-fredoka font-bold">
-                            {profile?.birthDate ? new Date(profile.birthDate).toLocaleDateString('pt-BR') : 'Não informada'}
-                          </p>
-                        </div>
-                      )}
-                    </div>
+                  <div className="space-y-2">
+                    <Label className="text-gray-500 text-[10px] uppercase tracking-[0.2em] font-black">CPF / CNPJ</Label>
+                    {isEditing ? (
+                      <Input 
+                        name="cpfCnpj"
+                        value={formData?.cpfCnpj}
+                        onChange={handleChange}
+                        className="h-11 bg-white/5 border-white/10 rounded-xl focus:border-green-400 transition-all font-fredoka text-sm"
+                        required
+                      />
+                    ) : (
+                      <p className="text-md text-white font-fredoka font-bold">{profile?.cpfCnpj}</p>
+                    )}
                   </div>
                 </div>
               </div>

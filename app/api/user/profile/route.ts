@@ -56,7 +56,6 @@ export async function POST(request: Request) {
     const {
       fullName,
       phone,
-      birthDate,
       cpfCnpj,
       address,
       addressNumber,
@@ -80,7 +79,6 @@ export async function POST(request: Request) {
       email,
       fullName,
       phone,
-      birthDate,
       cpfCnpj,
       address,
       addressNumber,
