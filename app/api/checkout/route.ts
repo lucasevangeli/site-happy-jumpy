@@ -185,12 +185,16 @@ export async function POST(request: Request) {
           return NextResponse.json({ error: 'Dados do cartão ou token são obrigatórios.' }, { status: 400 });
         }
 
+        // Obter IP do cliente (obrigatório para Cartão no Asaas)
+        const ip = headersList.get('x-forwarded-for')?.split(',')[0] || '127.0.0.1';
+
         const paymentPayload: any = {
           customer: asaasCustomerId,
           billingType: 'CREDIT_CARD',
           dueDate: formattedDueDate,
           value: totalValue,
           description: `Pedido de ${userData?.fullName || 'Cliente'}`,
+          remoteIp: ip,
         };
 
         if (creditCardToken) {
